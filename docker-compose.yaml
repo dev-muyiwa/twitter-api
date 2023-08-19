@@ -1,0 +1,12 @@
+version: "3.8"
+services:
+  authentication:
+    build: ./authentication
+    container_name: auth-service
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./authentication/.env
+    volumes:
+      - ./authentication:/usr/src/app/twitter-api/authentication
+      - /usr/src/app/twitter-api/authentication/node_modules

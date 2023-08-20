@@ -1,12 +1,27 @@
 version: "3.8"
 services:
-  authentication:
+  auth-service:
     build: ./authentication
     container_name: auth-service
     ports:
       - "3000:3000"
     env_file:
       - ./authentication/.env
+    depends_on:
+      - user-db
     volumes:
       - ./authentication:/usr/src/app/twitter-api/authentication
       - /usr/src/app/twitter-api/authentication/node_modules
+
+  user-db:
+    image: mongodb/mongodb-community-server:6.0.4-ubi8
+    env_file:
+      - ./authentication/.env
+    ports:
+      - "12000:27017"
+    volumes:
+      - mongodb-user:/data/db
+
+
+volumes:
+  mongodb-user:

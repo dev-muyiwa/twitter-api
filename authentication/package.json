@@ -8,7 +8,7 @@
     "start": "nodemon -L -w src/**/*.ts -w .env -w Dockerfile --exec ts-node src/index.ts"
   },
   "keywords": [],
-  "author": "",
+  "author": "Moyosoreoluwa Odusola",
   "license": "ISC",
   "dependencies": {
     "@types/bcrypt": "^5.0.0",

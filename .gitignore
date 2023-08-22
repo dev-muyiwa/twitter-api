@@ -1,0 +1,6 @@
+/.idea
+/.vscode
+.env.rabbit-mq
+api-gateway/.env
+auth-service/.env
+auth-service/node_modules

@@ -1,0 +1,6 @@
+node_modules/
+.env
+.git
+api-gateway/.env
+auth-service/.env
+.env.rabbit-mq

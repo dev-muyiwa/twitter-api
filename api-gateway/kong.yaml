@@ -1,0 +1,17 @@
+_format_version: "3.0"
+
+services:
+  - name: auth-service
+    url: http://auth-service:3000
+    routes:
+      - name: auth-route
+        paths:
+          - /auth
+
+plugins:
+  - name: rate-limiting
+    route: auth-route
+    config:
+      minute: 5
+      policy: local
+      error_message: "API rate limit exceeded. Try again in a minute."

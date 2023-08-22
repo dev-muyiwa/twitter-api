@@ -1,27 +1,53 @@
 version: "3.8"
+
 services:
+  gateway:
+    image: kong/kong-gateway:3.4
+    container_name: gateway
+    volumes:
+      - ./api-gateway/kong.yaml:/usr/src/app/twitter-api/api-gateway/kong.yaml
+    env_file:
+      - api-gateway/.env
+    ports:
+      - "8000:8000" # Kong's proxy
+      - "8001:8001" # Kong Admin API
+      - "8444:8444" # Kong Admin API
+
+  rabbit-mq:
+    image: rabbitmq:3.12-management
+    container_name: rabbit-mq
+    env_file:
+      - .env.rabbit-mq
+    ports:
+      - "5672:5672" # AMQP protocol port
+      - "15672:15672" # HTTP management UI
+
   auth-service:
-    build: ./authentication
+    build: ./auth-service
     container_name: auth-service
     ports:
       - "3000:3000"
     env_file:
-      - ./authentication/.env
+      - ./auth-service/.env
     depends_on:
       - user-db
+      - gateway
+      - rabbit-mq
     volumes:
-      - ./authentication:/usr/src/app/twitter-api/authentication
-      - /usr/src/app/twitter-api/authentication/node_modules
+      - ./auth-service:/usr/src/app/twitter-api/auth-service
+      - node-modules:/usr/src/app/twitter-api/auth-service/node_modules
 
   user-db:
     image: mongodb/mongodb-community-server:6.0.4-ubi8
+    container_name: user-db
     env_file:
-      - ./authentication/.env
+      - ./auth-service/.env
     ports:
       - "12000:27017"
     volumes:
       - mongodb-user:/data/db
 
-
 volumes:
   mongodb-user:
+  rabbit-mq:
+  node-modules:

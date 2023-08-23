@@ -8,9 +8,15 @@ services:
         paths:
           - /auth
 
+  - name: user-service
+    url: http://user-service:3001
+    routes:
+      - name: user-route
+        paths:
+          - /users
+
 plugins:
   - name: rate-limiting
-    route: auth-route
     config:
       minute: 5
       policy: local

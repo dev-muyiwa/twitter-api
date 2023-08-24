@@ -1,13 +1,13 @@
 {
-  "name": "twitter-api",
+  "name": "twitter-auth-microservice",
   "version": "1.0.0",
-  "description": "Twitter API built using the microservice-based architecture.",
+  "description": "Authentication module for Twitter API built using the microservice-based architecture.",
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon -L -w src/**/*.ts -w .env -w Dockerfile --exec ts-node src/index.ts"
+    "start": "nodemon -L -w *.ts -w .env -w Dockerfile --exec ts-node src/index.ts"
   },
-  "keywords": [],
+  "keywords": ["twitter", "microservices", "user-service", "rest", "api"],
   "author": "Moyosoreoluwa Odusola",
   "license": "ISC",
   "dependencies": {
@@ -17,6 +17,7 @@
     "@types/otp-generator": "^4.0.0",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.3.1",
+    "mongoose": "^7.4.1",
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
     "jsonwebtoken": "^9.0.0",

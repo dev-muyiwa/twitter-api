@@ -7,17 +7,24 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon -L -w *.ts -w .env -w Dockerfile --exec ts-node src/index.ts"
   },
-  "keywords": ["twitter", "microservices", "user-service", "rest", "api"],
+  "keywords": [
+    "twitter",
+    "microservices",
+    "user-service",
+    "rest",
+    "api"
+  ],
   "author": "Moyosoreoluwa Odusola",
   "license": "ISC",
   "dependencies": {
     "@types/express": "^4.17.17",
     "@types/jsonwebtoken": "^9.0.2",
     "dotenv": "^16.3.1",
-    "mongoose": "^7.4.1",
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
+    "kafkajs": "^2.2.4",
     "maskdata": "^1.2.2",
+    "mongoose": "^7.4.1",
     "nodemon": "^2.0.22",
     "otp-generator": "^4.0.1",
     "ts-node": "^10.9.1",

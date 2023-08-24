@@ -5,49 +5,94 @@ services:
     image: kong/kong-gateway:3.4
     container_name: gateway
     volumes:
-      - ./api-gateway/kong.yaml:/usr/src/app/twitter-api/api-gateway/kong.yaml
+      - ./kong.yaml:/usr/src/app/twitter-api/kong.yaml
     env_file:
-      - api-gateway/.env
+      - .env
     ports:
       - "8000:8000" # Kong's proxy
       - "8001:8001" # Kong Admin API
       - "8444:8444" # Kong Admin API
+    networks:
+      - api-network
 
-  rabbit-mq:
-    image: rabbitmq:3.12-management
-    container_name: rabbit-mq
-    env_file:
-      - .env.rabbit-mq
+  zookeeper:
+    image: zookeeper:3.9
+    container_name: zookeeper
     ports:
-      - "5672:5672" # AMQP protocol port
-      - "15672:15672" # HTTP management UI
+      - "2181:2181"
+    volumes:
+      - zookeeper:/data
+      - zookeeper:/datalog
+    networks:
+      - api-network
+
+  kafka:
+    image: conduktor/kafka:3.3.1
+    container_name: kafka
+    hostname: kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+      - "9101:9101"
+    volumes:
+      - kafka:/conduktor/kafka
+    env_file:
+      - .env
+    depends_on:
+      - zookeeper
+    networks:
+      - api-network
 
   auth-service:
     build: ./auth-service
     container_name: auth-service
     ports:
       - "3000:3000"
-    env_file:
-      - ./auth-service/.env
     depends_on:
       - user-db
       - gateway
-      - rabbit-mq
+      - kafka
     volumes:
       - ./auth-service:/usr/src/app/twitter-api/auth-service
-      - node-modules:/usr/src/app/twitter-api/auth-service/node_modules
+      - node-modules:/usr/src/app/twitter-api/node_modules
+    networks:
+      - api-network
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports:
+      - "3001:3000"
+    depends_on:
+      - user-db
+      - gateway
+      - kafka
+    volumes:
+      - ./user-service:/usr/src/app/twitter-api/user-service
+      - node-modules:/usr/src/app/twitter-api/node_modules
+    networks:
+      - api-network
 
   user-db:
     image: mongodb/mongodb-community-server:6.0.4-ubi8
     container_name: user-db
-    env_file:
-      - ./auth-service/.env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
     ports:
-      - "12000:27017"
+      - "27018:27017"
     volumes:
       - mongodb-user:/data/db
+    networks:
+      - api-network
 
 volumes:
   mongodb-user:
   rabbit-mq:
+  kafka:
+  zookeeper:
   node-modules:
+
+networks:
+  api-network:
+    name: api-network

@@ -16,18 +16,20 @@ services:
       - api-network
 
   zookeeper:
-    image: zookeeper:3.9
+    image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
     ports:
       - "2181:2181"
     volumes:
       - zookeeper:/data
       - zookeeper:/datalog
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
     networks:
       - api-network
 
   kafka:
-    image: conduktor/kafka:3.3.1
+    image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
     hostname: kafka
     ports:
@@ -48,6 +50,8 @@ services:
     container_name: auth-service
     ports:
       - "3000:3000"
+    env_file:
+      - auth-service/.env
     depends_on:
       - user-db
       - gateway
@@ -67,6 +71,8 @@ services:
       - user-db
       - gateway
       - kafka
+    env_file:
+      - user-service/.env
     volumes:
       - ./user-service:/usr/src/app/twitter-api/user-service
       - node-modules:/usr/src/app/twitter-api/node_modules
@@ -77,8 +83,8 @@ services:
     image: mongodb/mongodb-community-server:6.0.4-ubi8
     container_name: user-db
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGODB_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGODB_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
     ports:
       - "27018:27017"
     volumes:

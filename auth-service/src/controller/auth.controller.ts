@@ -1,41 +1,38 @@
 import {Request, Response} from "express";
 import {sendErrorResponse, sendSuccessResponse} from "../handlers/ResponseHandlers";
 import {Kafka} from "kafkajs";
+import {kafkaConsumer, kafkaProducer} from "../index";
 
 class AuthController {
 
     async testKafka(req: Request, res: Response) {
-        let authToken: string = "";
-        const kafka = new Kafka({
-            clientId: "auth-service",
-            brokers: ["kafka:9093"],
-        });
-        const producer = kafka.producer();
-        const consumer = kafka.consumer({ groupId: "auth-group"});
+        let authToken: any = null;
 
-        await producer.connect();
-        await consumer.connect();
-
-        await consumer.subscribe({ topic: 'auth-token' });
-        await consumer.run({
-            eachMessage: async ({ topic, partition, message }) => {
-                // Process auth token message here
+        await kafkaConsumer.subscribe({topic: 'auth-token'});
+        await kafkaConsumer.run({
+            eachMessage: async ({topic, partition, message}) => {
                 const tokenData = JSON.parse(`${message.value}`);
-                console.log(`Value is .............. ${message.value}`)
+                console.log(`Topic is .............. ${topic}`)
+
                 authToken = tokenData.token;
                 console.log('Received auth token:', authToken);
             },
         });
 
-        await producer.send({
+        await kafkaProducer.send({
             topic: "user-registration",
             messages: [{value: "Holla👋🏾. I'm currently testing kafka from the auth service."}],
         });
 
-        // await producer.disconnect();
-
+        while (!authToken) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
 
         return sendSuccessResponse(res, {token: authToken}, "Auth token received.");
+    }
+
+    async homeResponse(req: Request, res: Response) {
+        return sendSuccessResponse(res, null, "Test response from the auth service.");
     }
 
     async register(req: Request, res: Response): Promise<Response> {

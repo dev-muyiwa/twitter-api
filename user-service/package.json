@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon -L -w *.ts -w .env -w Dockerfile --exec ts-node src/index.ts"
+    "start": "nodemon -L -w **/*.ts -w .env -w Dockerfile --exec ts-node src/index.ts"
   },
   "keywords": [
     "twitter",

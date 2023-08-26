@@ -8,6 +8,7 @@ const authRouter = Router();
 
 const authController = new AuthController();
 
+authRouter.get("/", authController.homeResponse);
 authRouter.get("/register", authController.register);
 authRouter.get("/login", authController.login);
 authRouter.get("/test-kafka", authController.testKafka);

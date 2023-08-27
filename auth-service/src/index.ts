@@ -2,6 +2,7 @@ import express, { Application, Response, Request } from "express";
 import authRouter from "./routes/auth.routes";
 import {Consumer, Producer} from "kafkajs";
 import KafkaService from "./utils/kafka";
+import {databaseSetup} from "./config/database";
 
 const port: number = Number(process.env.PORT);
 const app: Application = express();
@@ -22,11 +23,16 @@ process.on('SIGINT', async () => {
     process.exit();
 });
 
-app.listen(port, async () => {
-    console.log(`Listening to auth-service on port ${port}...`);
+
+databaseSetup().then(() => {
+    console.log("Database connection successful...");
+
+    app.use("/", authRouter);
+    app.listen(port, async () => {
+        console.log(`Listening to auth-service on port ${port}...`);
+    });
+}).catch(err => {
+    console.error("Error connecting to the database...", err);
 });
-
-app.use("/", authRouter);
-
 
 export {kafkaProducer, kafkaConsumer};

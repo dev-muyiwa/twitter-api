@@ -7,7 +7,7 @@ type UserDocument = Document & {
     displayName?: string
     email: string,
     mobile?: string,
-    password: string,
+    passwordHash: string,
     avatar?: {
         publicId: string,
         url: string
@@ -32,7 +32,7 @@ const UserSchema: Schema<UserDocument> = new Schema<UserDocument>({
     displayName: String,
     email: String,
     mobile: String,
-    password: {
+    passwordHash: {
         type: String,
         required: true
     },

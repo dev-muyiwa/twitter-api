@@ -1,49 +1,49 @@
 version: "3.8"
 
 services:
-  gateway:
-    image: kong/kong-gateway:3.4
-    container_name: gateway
-    volumes:
-      - ./kong.yaml:/usr/src/app/twitter-api/kong.yaml
-    env_file:
-      - .env
-    ports:
-      - "8000:8000" # Kong's proxy
-      - "8001:8001" # Kong Admin API
-      - "8444:8444" # Kong Admin API
-    networks:
-      - api-network
+#  gateway:
+#    image: kong/kong-gateway:3.4
+#    container_name: gateway
+#    volumes:
+#      - ./kong.yaml:/twitter-api/kong.yaml
+#    env_file:
+#      - .env
+#    ports:
+#      - "8000:8000" # Kong's proxy
+#      - "8001:8001" # Kong Admin API
+#      - "8444:8444" # Kong Admin API
+#    networks:
+#      - api-network
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.0
-    container_name: zookeeper
-    ports:
-      - "2181:2181"
-    volumes:
-      - zookeeper:/data
-      - zookeeper:/datalog
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-    networks:
-      - api-network
+#  zookeeper:
+#    image: confluentinc/cp-zookeeper:7.5.0
+#    container_name: zookeeper
+#    ports:
+#      - "2181:2181"
+#    volumes:
+#      - zookeeper:/data
+#      - zookeeper:/datalog
+#    environment:
+#      ZOOKEEPER_CLIENT_PORT: 2181
+#    networks:
+#      - api-network
 
-  kafka:
-    image: confluentinc/cp-kafka:7.5.0
-    container_name: kafka
-    hostname: kafka
-    ports:
-      - "9092:9092"
-      - "9093:9093"
-      - "9101:9101"
-    volumes:
-      - kafka:/conduktor/kafka
-    env_file:
-      - .env
-    depends_on:
-      - zookeeper
-    networks:
-      - api-network
+#  kafka:
+#    image: confluentinc/cp-kafka:7.5.0
+#    container_name: kafka
+#    hostname: kafka
+#    ports:
+#      - "9092:9092"
+#      - "9093:9093"
+#      - "9101:9101"
+#    volumes:
+#      - kafka:/conduktor/kafka
+#    env_file:
+#      - .env
+#    depends_on:
+#      - zookeeper
+#    networks:
+#      - api-network
 
   auth-service:
     build: ./auth-service
@@ -54,30 +54,30 @@ services:
       - auth-service/.env
     depends_on:
       - user-db
-      - gateway
-      - kafka
+#      - gateway
+#      - kafka
     volumes:
-      - ./auth-service:/usr/src/app/twitter-api/auth-service
-      - node-modules:/usr/src/app/twitter-api/node_modules
+      - ./auth-service:/twitter-api/auth-service
+      - node-modules:/twitter-api/node_modules
     networks:
       - api-network
 
-  user-service:
-    build: ./user-service
-    container_name: user-service
-    ports:
-      - "3001:3000"
-    depends_on:
-      - user-db
-      - gateway
-      - kafka
-    env_file:
-      - user-service/.env
-    volumes:
-      - ./user-service:/usr/src/app/twitter-api/user-service
-      - node-modules:/usr/src/app/twitter-api/node_modules
-    networks:
-      - api-network
+#  user-service:
+#    build: ./user-service
+#    container_name: user-service
+#    ports:
+#      - "3001:3000"
+#    depends_on:
+#      - user-db
+#      - gateway
+#      - kafka
+#    env_file:
+#      - user-service/.env
+#    volumes:
+#      - ./user-service:/twitter-api/user-service
+#      - node-modules:/twitter-api/node_modules
+#    networks:
+#      - api-network
 
   user-db:
     image: mongodb/mongodb-community-server:6.0.4-ubi8

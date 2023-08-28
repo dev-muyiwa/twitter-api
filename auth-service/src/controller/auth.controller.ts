@@ -2,6 +2,7 @@ import {Request, Response} from "express";
 import {sendErrorResponse, sendSuccessResponse} from "../handlers/ResponseHandlers";
 import {Kafka} from "kafkajs";
 import {kafkaConsumer, kafkaProducer} from "../index";
+import {authService} from "../service/auth.service";
 
 class AuthController {
 
@@ -37,8 +38,12 @@ class AuthController {
 
     async register(req: Request, res: Response): Promise<Response> {
         try {
+            console.log(req.body);
             const {firstName, lastName, handle, email, mobile, password} = req.body;
-            return sendSuccessResponse(res, {name: "Registration"}, "Registration successful.", 201);
+
+            const user = await authService.createUser({firstName, lastName, handle, email, mobile, password});
+
+            return sendSuccessResponse(res, user, "Registration successful.", 201);
         } catch (err) {
             return sendErrorResponse(res, err);
         }

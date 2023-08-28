@@ -2,7 +2,7 @@ FROM node:20.5.1
 
 RUN npm install -g nodemon
 
-WORKDIR /usr/src/app/twitter-api/user-service
+WORKDIR /twitter-api/user-service
 
 COPY package.json .
 

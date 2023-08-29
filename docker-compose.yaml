@@ -15,33 +15,49 @@ services:
 #    networks:
 #      - api-network
 
-#  zookeeper:
-#    image: confluentinc/cp-zookeeper:7.5.0
-#    container_name: zookeeper
-#    ports:
-#      - "2181:2181"
-#    volumes:
-#      - zookeeper:/data
-#      - zookeeper:/datalog
-#    environment:
-#      ZOOKEEPER_CLIENT_PORT: 2181
-#    networks:
-#      - api-network
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper:/data
+      - zookeeper:/datalog
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      - api-network
 
-#  kafka:
-#    image: confluentinc/cp-kafka:7.5.0
-#    container_name: kafka
-#    hostname: kafka
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    hostname: kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+      - "9101:9101"
+    volumes:
+      - kafka:/conduktor/kafka
+    env_file:
+      - .env
+    depends_on:
+      - zookeeper
+    networks:
+      - api-network
+
+#  rabbit-mq:
+#    image: rabbitmq:3.12-management
+#    hostname: api-mq
+#    container_name: rabbit-mq
 #    ports:
-#      - "9092:9092"
-#      - "9093:9093"
-#      - "9101:9101"
+#      - "5672:5672" # AMQP protocol port
+#      - "15672:15672" # HTTP management UI
 #    volumes:
-#      - kafka:/conduktor/kafka
-#    env_file:
-#      - .env
-#    depends_on:
-#      - zookeeper
+#      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+#      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+#    environment:
+#      - RABBITMQ_DEFAULT_USER=${RABBIT_MQ_USER}
+#      - RABBITMQ_DEFAULT_PASS=${RABBIT_MQ_PASS}
 #    networks:
 #      - api-network
 
@@ -55,10 +71,10 @@ services:
     depends_on:
       - user-db
 #      - gateway
-#      - kafka
+      - kafka
     volumes:
       - ./auth-service:/twitter-api/auth-service
-      - node-modules:/twitter-api/node_modules
+      - node-modules:/twitter-api/auth-service/node_modules
     networks:
       - api-network
 
@@ -69,15 +85,30 @@ services:
 #      - "3001:3000"
 #    depends_on:
 #      - user-db
-#      - gateway
+##      - gateway
 #      - kafka
 #    env_file:
 #      - user-service/.env
 #    volumes:
 #      - ./user-service:/twitter-api/user-service
-#      - node-modules:/twitter-api/node_modules
+#      - node-modules:/twitter-api/user-service/node_modules
 #    networks:
 #      - api-network
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "3002:3000"
+    env_file:
+      - notification-service/.env
+    volumes:
+      - ./notification-service:/twitter-api/notification-service
+      - node-modules:/twitter-api/notification-service/node_modules
+    networks:
+      - api-network
+    depends_on:
+      - kafka
 
   user-db:
     image: mongodb/mongodb-community-server:6.0.4-ubi8

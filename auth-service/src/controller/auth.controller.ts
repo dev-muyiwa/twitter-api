@@ -47,6 +47,10 @@ class AuthController {
             const user = await authService.createUser({firstName, lastName, handle, email, mobile, password});
 
             // Send an account creation email.
+            await kafkaProducer.send({
+                topic: "user-verification-email",
+                messages: [{value: `${user.firstName}`}],
+            });
 
             return sendSuccessResponse(res, user.getBasicInfo(), "Registration successful", 201);
         } catch (err) {

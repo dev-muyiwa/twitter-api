@@ -7,21 +7,21 @@ import app from "./config/app";
 
 const port: number = Number(process.env.PORT);
 
-// const kafkaService = new KafkaService(["kafka:9093"],"auth-service");
+const kafkaService = new KafkaService(["kafka:9093"],"auth-service");
 let kafkaProducer: Producer, kafkaConsumer: Consumer;
 
-// kafkaService.createConnection("auth-group")
-//     .then(({producer, consumer})=> {
-//         kafkaProducer = producer;
-//         kafkaConsumer = consumer;
-// }).catch(error => {
-//     console.error('Error creating Kafka connection:', error);
-// });
+kafkaService.createConnection("auth-group")
+    .then(({producer, consumer})=> {
+        kafkaProducer = producer;
+        kafkaConsumer = consumer;
+}).catch(error => {
+    console.error('Error creating Kafka connection:', error);
+});
 
-// process.on('SIGINT', async () => {
-//     await Promise.all([kafkaProducer.disconnect(), kafkaConsumer.disconnect()]);
-//     process.exit();
-// });
+process.on('SIGINT', async () => {
+    await Promise.all([kafkaProducer.disconnect(), kafkaConsumer.disconnect()]);
+    process.exit();
+});
 
 
 databaseSetup().then(() => {

@@ -3,7 +3,9 @@ import authRouter from "./routes/auth.routes";
 import {Consumer, Producer} from "kafkajs";
 import KafkaService from "./utils/kafka";
 import {databaseSetup} from "./config/database";
+import app from "./config/app";
 
+const port: number = Number(process.env.PORT);
 
 // const kafkaService = new KafkaService(["kafka:9093"],"auth-service");
 let kafkaProducer: Producer, kafkaConsumer: Consumer;
@@ -24,14 +26,6 @@ let kafkaProducer: Producer, kafkaConsumer: Consumer;
 
 databaseSetup().then(() => {
     console.log("Database connection successful...");
-
-    const port: number = Number(process.env.PORT);
-    const app: Application = express();
-
-    app.use(express.json());
-    app.use(express.urlencoded({extended: true}));
-
-    app.use("/", authRouter);
 
     app.listen(port, async () => {
         console.log(`Listening to auth-service on port ${port}...`);

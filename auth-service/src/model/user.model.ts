@@ -1,5 +1,11 @@
 import mongoose, {Document, Model, Schema} from "mongoose";
 
+enum Role {
+    USER = "user",
+    ADMIN = "admin",
+    SUPER_ADMIN = "super-admin"
+}
+
 type UserDocument = Document & {
     firstName?: string,
     lastName?: string,
@@ -8,6 +14,7 @@ type UserDocument = Document & {
     email: string,
     mobile?: string,
     passwordHash: string,
+    role?: string,
     avatar?: {
         publicId: string,
         url: string
@@ -20,6 +27,9 @@ type UserDocument = Document & {
     location?: string,
     dob?: string,
     isVerified: boolean,
+    refreshToken: string
+
+    getBasicInfo(): object;
 }
 
 const UserSchema: Schema<UserDocument> = new Schema<UserDocument>({
@@ -36,6 +46,12 @@ const UserSchema: Schema<UserDocument> = new Schema<UserDocument>({
         type: String,
         required: true
     },
+    role: {
+        type: String,
+        required: false,
+        enum: Role,
+        default: Role.USER
+    },
     avatar: {
         publicId: String,
         url: String
@@ -49,13 +65,20 @@ const UserSchema: Schema<UserDocument> = new Schema<UserDocument>({
     isVerified: {
         type: Boolean,
         default: false
-    }
+    },
+    refreshToken: String
 }, {
     timestamps: true
 });
 
 
 const UserModel: Model<UserDocument> = mongoose.model<UserDocument>("User", UserSchema);
+
+UserModel.prototype.getBasicInfo = function () {
+    const {id, firstName, lastName, email, handle, mobile, avatar} = this as UserDocument;
+
+    return {id, firstName, lastName, handle, email, mobile, avatar};
+}
 
 export {
     UserDocument, UserModel

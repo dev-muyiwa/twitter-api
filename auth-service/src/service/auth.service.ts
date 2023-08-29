@@ -13,11 +13,11 @@ export class RegisterData {
 }
 
 const createUser = async (data: RegisterData) => {
-    const existingUser: UserDocument|null = await UserModel.findOne({
+    const existingUser: UserDocument | null = await UserModel.findOne({
         $or: [{email: data.email}, {mobile: data.mobile}, {handle: data.handle}]
     });
-    if (!existingUser){
-        throw new CustomError("User(s) exists with this credential.",CustomError.BAD_REQUEST);
+    if (existingUser) {
+        throw new CustomError("User(s) exists with this credential(s).", CustomError.BAD_REQUEST);
     }
     const user: UserDocument = await new UserModel({
         firstName: data.firstName,
@@ -31,12 +31,22 @@ const createUser = async (data: RegisterData) => {
     return user;
 }
 
-// const checkUserExists = async ()
+const findUser = async (username: string) => {
+    const user: UserDocument | null = await UserModel.findOne({
+        $or: [{email: username}, {mobile: username}, {handle: username}]
+    });
 
-const verify = async () =>{
+    if (!user) {
+        throw new CustomError("Invalid username/password.", CustomError.BAD_REQUEST);
+    }
+
+    return user;
+}
+
+const verify = async () => {
 
 }
 
 export const authService = {
-    createUser
+    createUser, findUser
 }

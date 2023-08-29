@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon -L -w **/*.ts -w .env -w Dockerfile --exec ts-node src/index.ts"
+    "start": "nodemon --watch 'src/**/*' -e ts,tsx --exec 'ts-node' ./src/index.ts"
   },
   "keywords": [
     "twitter",
@@ -26,7 +26,7 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
-    "jsonwebtoken": "^9.0.0",
+    "jsonwebtoken": "^9.0.1",
     "kafkajs": "^2.2.4",
     "maskdata": "^1.2.2",
     "mongoose": "^7.4.1",

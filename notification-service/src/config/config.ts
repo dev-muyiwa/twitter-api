@@ -1,4 +1,6 @@
 import * as process from "process";
+
+
 export const config = {
     host: process.env.SMTP_HOST || "smtp.sendgrid.net",
     port: Number(process.env.SMTP_PORT) ? Number(process.env.SMTP_PORT) : 465,

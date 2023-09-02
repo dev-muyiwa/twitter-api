@@ -1,19 +1,19 @@
 version: "3.8"
 
 services:
-#  gateway:
-#    image: kong/kong-gateway:3.4
-#    container_name: gateway
-#    volumes:
-#      - ./kong.yaml:/twitter-api/kong.yaml
-#    env_file:
-#      - .env
-#    ports:
-#      - "8000:8000" # Kong's proxy
-#      - "8001:8001" # Kong Admin API
-#      - "8444:8444" # Kong Admin API
-#    networks:
-#      - api-network
+  gateway:
+    image: kong/kong-gateway:3.4
+    container_name: gateway
+    volumes:
+      - ./kong.yaml:/usr/src/app/twitter-api/kong.yaml
+    env_file:
+      - .env
+    ports:
+      - "8000:8000" # Kong's proxy
+      - "8001:8001" # Kong Admin API
+      - "8444:8444" # Kong Admin API
+    networks:
+      - api-network
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
@@ -70,30 +70,30 @@ services:
       - auth-service/.env
     depends_on:
       - user-db
-#      - gateway
+      - gateway
       - kafka
     volumes:
       - ./auth-service:/twitter-api/auth-service
-      - node-modules:/twitter-api/auth-service/node_modules
+      - node-modules-auth:/twitter-api/auth-service/node_modules
     networks:
       - api-network
 
-#  user-service:
-#    build: ./user-service
-#    container_name: user-service
-#    ports:
-#      - "3001:3000"
-#    depends_on:
-#      - user-db
-##      - gateway
-#      - kafka
-#    env_file:
-#      - user-service/.env
-#    volumes:
-#      - ./user-service:/twitter-api/user-service
-#      - node-modules:/twitter-api/user-service/node_modules
-#    networks:
-#      - api-network
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports:
+      - "3001:3000"
+    depends_on:
+      - user-db
+      - gateway
+      - kafka
+    env_file:
+      - user-service/.env
+    volumes:
+      - ./user-service:/twitter-api/user-service
+      - node-modules-user:/twitter-api/user-service/node_modules
+    networks:
+      - api-network
 
   notification-service:
     build: ./notification-service
@@ -104,7 +104,7 @@ services:
       - notification-service/.env
     volumes:
       - ./notification-service:/twitter-api/notification-service
-      - node-modules:/twitter-api/notification-service/node_modules
+      - node-modules-notification:/twitter-api/notification-service/node_modules
     networks:
       - api-network
     depends_on:
@@ -128,7 +128,10 @@ volumes:
   rabbit-mq:
   kafka:
   zookeeper:
-  node-modules:
+  node-modules-auth:
+  node-modules-user:
+  node-modules-notification:
+
 
 networks:
   api-network:

@@ -7,6 +7,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import {CustomError} from "../utils/CustomError";
 import {config} from "../config/config";
+import {UserDocument} from "../model/user.model";
 
 class AuthController {
 
@@ -44,12 +45,11 @@ class AuthController {
         try {
             const {firstName, lastName, handle, email, mobile, password} = req.body;
 
-            const user = await authService.createUser({firstName, lastName, handle, email, mobile, password});
+            const user: UserDocument = await authService.createUser({firstName, lastName, handle, email, mobile, password});
 
-            // Send an account creation email.
             await kafkaProducer.send({
-                topic: "user-verification-email",
-                messages: [{value: `${user.firstName}`}],
+                topic: "user-registration",
+                messages: [{value: `${user.email}`}]
             });
 
             return sendSuccessResponse(res, user.getBasicInfo(), "Registration successful", 201);
@@ -61,20 +61,22 @@ class AuthController {
     async login(req: Request, res: Response): Promise<Response> {
         try {
             const {username, password} = req.body;
-            const user = await authService.findUser(username);
+            const user: UserDocument = await authService.findUser(username);
 
             if (!await bcrypt.compare(password, user.passwordHash)) {
                 throw new CustomError("Invalid username/password", CustomError.BAD_REQUEST)
             }
 
-            // if(!user.isVerified){
-            //
-            // }
+            if(!user.isVerified){
+                await kafkaProducer.send({
+                    topic: "user-verification",
+                    messages: [{value: `${user.email}`}]
+                });
+            }
 
             // Send a verification mail if the account isn't verified yet.
             // Check if account is suspended.
             // Check if 2FA is active to send OTP.
-            // Send access and refresh token.
             const refreshToken: string = user.refreshToken ?? jwt.sign({
                 name: user.firstName + ' ' + user.lastName,
                 role: user.role

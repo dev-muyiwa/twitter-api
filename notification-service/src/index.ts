@@ -1,6 +1,7 @@
 import express, {Application, Response, Request} from "express";
 import KafkaService from "./utils/kafka";
 import {Consumer, Producer} from "kafkajs";
+import {sendMail} from "./service/email.service";
 
 
 const app: Application = express();
@@ -48,14 +49,15 @@ app.listen(port, async () => {
                             break;
                         }
                         case "user-registration": {
-                            console.log(`Holla, ${recipient}! Welcome to this user registration.`)
+                            await sendMail(recipient, "Welcome to Twitter Fam!", undefined, "Hello, welcome to this API. This is a test deployment.");
+                            console.log("Email sent to", recipient);
                             break;
                         }
                         default: {
                             console.log(`Invalid kafka topic \"${topic}\".`)
                         }
                     }
-                },
+                }
             });
         }).catch((err) => console.log("Unable to connect to Kafka consumer:", err))
 

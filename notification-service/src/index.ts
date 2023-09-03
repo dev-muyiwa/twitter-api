@@ -1,35 +1,35 @@
-import express, {Application, Response, Request} from "express";
+import express, {Application} from "express";
 import KafkaService from "./utils/kafka";
 import {Consumer, Producer} from "kafkajs";
 import {sendMail} from "./service/email.service";
+import {config} from "./config/config";
 
 
 const app: Application = express();
-const port: number = Number(process.env.PORT);
+const port: number = config.port;
 
-const kafka = new KafkaService(["kafka:9093"], "notification-service");
+const kafka: KafkaService = new KafkaService(["kafka:9093"], "notification-service");
 let kafkaProducer: Producer, kafkaConsumer: Consumer;
 
 
 kafka.connectProducer()
     .then((producer) => {
         kafkaProducer = producer;
-        console.log("Kafka producer connected")
+        console.log("Connected to kafka producer.")
     }).catch((err) => console.log("Unable to connect to Kafka producer:", err))
 
+kafka.connectConsumer("notification-group")
+    .then(async (consumer) => {
+        kafkaConsumer = consumer;
+        console.log("Connected to kafka consumer.");
 
-app.listen(port, async () => {
-    console.log(`Listening to notification service on port ${port}...`);
-    kafka.connectConsumer("notification-group")
-        .then(async (consumer) => {
-            kafkaConsumer = consumer;
-            console.log("Kafka consumer connected.")
-            // Subscribe to SMS, OTP topics.
+        await kafkaConsumer.subscribe({topic: 'user-otp-email'});
+        await kafkaConsumer.subscribe({topic: 'user-otp-sms'});
+        await kafkaConsumer.subscribe({topic: 'user-verification'});
+        await kafkaConsumer.subscribe({topic: 'user-registration'});
 
-            await kafkaConsumer.subscribe({topic: 'user-otp-email'});
-            await kafkaConsumer.subscribe({topic: 'user-otp-sms'});
-            await kafkaConsumer.subscribe({topic: 'user-verification-email'});
-            await kafkaConsumer.subscribe({topic: 'user-registration'});
+        app.listen(port, async () => {
+            console.log(`Listening to notification service on port ${port}...`);
 
             await kafkaConsumer.run({
                 eachMessage: async ({topic, partition, message}) => {
@@ -44,12 +44,14 @@ app.listen(port, async () => {
                             console.log(`Holla, ${recipient}! Welcome to this user OTP SMS.`)
                             break;
                         }
-                        case "user-verification-email": {
+                        case "user-verification": {
                             console.log(`Holla, ${recipient}! Welcome to this user verification.`)
                             break;
                         }
                         case "user-registration": {
-                            await sendMail(recipient, "Welcome to Twitter Fam!", undefined, "Hello, welcome to this API. This is a test deployment.");
+                            await sendMail(recipient, "Welcome to Twitter Fam!",
+                                undefined,
+                                "Hello, welcome to this API. This is a test deployment for 'user-registration' topic.");
                             console.log("Email sent to", recipient);
                             break;
                         }
@@ -59,9 +61,9 @@ app.listen(port, async () => {
                     }
                 }
             });
-        }).catch((err) => console.log("Unable to connect to Kafka consumer:", err))
+        })
 
-})
+    })
 
 process.on('SIGINT', async () => {
     await Promise.all([kafkaProducer.disconnect(), kafkaConsumer.disconnect()]);

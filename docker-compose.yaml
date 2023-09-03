@@ -45,22 +45,6 @@ services:
     networks:
       - api-network
 
-#  rabbit-mq:
-#    image: rabbitmq:3.12-management
-#    hostname: api-mq
-#    container_name: rabbit-mq
-#    ports:
-#      - "5672:5672" # AMQP protocol port
-#      - "15672:15672" # HTTP management UI
-#    volumes:
-#      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
-#      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
-#    environment:
-#      - RABBITMQ_DEFAULT_USER=${RABBIT_MQ_USER}
-#      - RABBITMQ_DEFAULT_PASS=${RABBIT_MQ_PASS}
-#    networks:
-#      - api-network
-
   auth-service:
     build: ./auth-service
     container_name: auth-service
@@ -69,7 +53,6 @@ services:
     env_file:
       - auth-service/.env
     depends_on:
-      - user-db
       - gateway
       - kafka
     volumes:

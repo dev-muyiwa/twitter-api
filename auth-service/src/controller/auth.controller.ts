@@ -4,7 +4,7 @@ import {Kafka} from "kafkajs";
 import {kafkaConsumer, kafkaProducer} from "../index";
 import {authService} from "../service/auth.service";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, {JwtPayload} from "jsonwebtoken";
 import {CustomError} from "../utils/CustomError";
 import {config} from "../config/config";
 import {UserDocument} from "../model/user.model";
@@ -45,7 +45,14 @@ class AuthController {
         try {
             const {firstName, lastName, handle, email, mobile, password} = req.body;
 
-            const user: UserDocument = await authService.createUser({firstName, lastName, handle, email, mobile, password});
+            const user: UserDocument = await authService.createUser({
+                firstName,
+                lastName,
+                handle,
+                email,
+                mobile,
+                password
+            });
 
             await kafkaProducer.send({
                 topic: "user-registration",
@@ -64,28 +71,34 @@ class AuthController {
             const user: UserDocument = await authService.findUser(username);
 
             if (!await bcrypt.compare(password, user.passwordHash)) {
-                throw new CustomError("Invalid username/password", CustomError.BAD_REQUEST)
+                throw new CustomError("Invalid login credentials", CustomError.BAD_REQUEST)
             }
 
-            if(!user.isVerified){
+            if (!user.isVerified) {
                 await kafkaProducer.send({
                     topic: "user-verification",
                     messages: [{value: `${user.email}`}]
                 });
             }
 
-            // Send a verification mail if the account isn't verified yet.
-            // Check if account is suspended.
-            // Check if 2FA is active to send OTP.
-            const refreshToken: string = user.refreshToken ?? jwt.sign({
-                name: user.firstName + ' ' + user.lastName,
-                role: user.role
-            }, config.server.jwt_refresh_secret, {expiresIn: "7d", subject: user.id})
+            let refreshToken: string;
+            let decodedJwt: JwtPayload | null = null;
 
-            if (!refreshToken || !jwt.verify(user.refreshToken, config.server.jwt_refresh_secret)) {
+            if (user.refreshToken) {
+                decodedJwt = jwt.verify(user.refreshToken, config.server.jwt_refresh_secret) as JwtPayload;
+            }
+
+            if (!decodedJwt || decodedJwt.exp! < Date.now() / 1000) {
+                refreshToken = jwt.sign({
+                    name: user.firstName + ' ' + user.lastName,
+                    role: user.role
+                }, config.server.jwt_refresh_secret, {expiresIn: "7d", subject: user.id});
+
                 await user.updateOne({
                     refreshToken: refreshToken
                 })
+            } else {
+                refreshToken = user.refreshToken
             }
 
             const accessToken: string = jwt.sign({
@@ -93,7 +106,6 @@ class AuthController {
                 role: user.role
             }, config.server.jwt_access_secret, {expiresIn: "30m", subject: user.id});
 
-            console.log("Refresh token is", refreshToken);
             return sendSuccessResponse(res, {
                 accessToken: accessToken,
                 refreshToken: refreshToken

@@ -6,7 +6,7 @@ const sendMail = async (to: string | string[], subject: string, html?: string, b
     try {
         const transporter: Transporter<SentMessageInfo> = nodemailer.createTransport({
             host: config.host,
-            port: config.port,
+            port: config.smtp_port,
             name: "Twitter",
             secure: config.tls === "yes",
             auth: {

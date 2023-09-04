@@ -56,7 +56,7 @@ class AuthController {
 
             await kafkaProducer.send({
                 topic: "user-registration",
-                messages: [{value: `${user.email}`}]
+                messages: [{value: user.email}]
             });
 
             return sendSuccessResponse(res, user.getBasicInfo(), "Registration successful", 201);
@@ -109,7 +109,7 @@ class AuthController {
             return sendSuccessResponse(res, {
                 accessToken: accessToken,
                 refreshToken: refreshToken
-            }, "Login successful.");
+            }, "Login successful");
         } catch (err) {
             return sendErrorResponse(res, err);
         }

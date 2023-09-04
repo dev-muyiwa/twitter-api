@@ -9,7 +9,7 @@ services:
           - /auth
 
   - name: user-service
-    url: http://user-service:3001
+    url: http://user-service:3001/users
     routes:
       - name: user-routes
         paths:

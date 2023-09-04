@@ -1,6 +1,5 @@
 import express, {Application} from "express";
-import KafkaService from "./utils/kafka";
-import {Consumer, Producer} from "kafkajs";
+import {KafkaService} from "@dev-muyiwa/shared-service";
 import {sendMail} from "./service/email.service";
 import {config} from "./config/config";
 
@@ -9,18 +8,17 @@ const app: Application = express();
 const port: number = config.port;
 
 const kafka: KafkaService = new KafkaService(["kafka:9093"], "notification-service");
-let kafkaProducer: Producer, kafkaConsumer: Consumer;
+const kafkaProducer = kafka.Producer;
+const kafkaConsumer = kafka.Consumer;
 
 
 kafka.connectProducer()
-    .then((producer) => {
-        kafkaProducer = producer;
+    .then(() => {
         console.log("Connected to kafka producer.")
     }).catch((err) => console.log("Unable to connect to Kafka producer:", err))
 
-kafka.connectConsumer("notification-group")
-    .then(async (consumer) => {
-        kafkaConsumer = consumer;
+kafka.connectConsumer()
+    .then(async () => {
         console.log("Connected to kafka consumer.");
 
         await kafkaConsumer.subscribe({topic: 'user-otp-email'});
@@ -71,4 +69,4 @@ process.on('SIGINT', async () => {
 });
 
 
-export {kafkaProducer, kafkaConsumer};
+export {kafka};

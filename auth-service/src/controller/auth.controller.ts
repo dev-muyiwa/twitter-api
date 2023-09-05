@@ -1,6 +1,5 @@
 import {Request, Response} from "express";
 import {sendErrorResponse, sendSuccessResponse} from "../handlers/ResponseHandlers";
-import {Kafka} from "kafkajs";
 import {kafkaConsumer, kafkaProducer} from "../index";
 import {authService} from "../service/auth.service";
 import bcrypt from "bcrypt";
@@ -35,10 +34,6 @@ class AuthController {
         }
 
         return sendSuccessResponse(res, {token: authToken}, "Auth token received.");
-    }
-
-    async homeResponse(req: Request, res: Response) {
-        return sendSuccessResponse(res, null, "Test response from the auth service.");
     }
 
     async register(req: Request, res: Response): Promise<Response> {

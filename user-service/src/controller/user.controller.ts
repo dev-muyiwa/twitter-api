@@ -9,6 +9,14 @@ class UserController {
             return sendErrorResponse(res, err);
         }
     }
+
+    async updateUser(req: Request, res: Response) {
+        try{
+
+        } catch (err) {
+
+        }
+    }
 }
 
 export default UserController;

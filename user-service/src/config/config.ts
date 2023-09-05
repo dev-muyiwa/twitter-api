@@ -1,8 +1,8 @@
 import dotenv from "dotenv";
 import * as process from "process";
+import {setupEnv} from "@dev-muyiwa/shared-service";
 
 dotenv.config();
-
 export const config = {
     mongo: {
         url: process.env.MONGO_URL || ""
@@ -15,9 +15,10 @@ export const config = {
         bcrypt_rounds: process.env.BCRYPT_ROUNDS ? Number(process.env.BCRYPT_ROUNDS) : 14,
 
 
-        jwt_access_secret: process.env.ACCESS_TOKEN_SECRET || "test",
+        jwt_access_secret: process.env.ACCESS_SECRET || "test",
         jwt_refresh_secret: process.env.REFRESH_TOKEN_SECRET || "refresh",
         jwt_reset_secret: process.env.RESET_TOKEN_SECRET || "",
     },
 
 }
+setupEnv(config.server.jwt_access_secret);

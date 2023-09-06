@@ -21,4 +21,5 @@ export const config = {
     },
 
 }
+console.log("Access secret is:", config.server.jwt_access_secret)
 setupEnv(config.server.jwt_access_secret);

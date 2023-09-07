@@ -10,6 +10,6 @@ const authController = new AuthController();
 
 authRouter.post("/register", authController.register);
 authRouter.post("/login", authController.login);
-authRouter.get("/test-kafka", authController.testKafka);
+authRouter.post("/forgot-password", authController.forgotPassword);
 
 export default authRouter;

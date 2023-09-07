@@ -7,6 +7,7 @@ import jwt, {JwtPayload} from "jsonwebtoken";
 import {CustomError} from "../utils/CustomError";
 import {config} from "../config/config";
 import {UserDocument} from "../model/user.model";
+import axios from "axios";
 
 class AuthController {
 
@@ -105,6 +106,29 @@ class AuthController {
                 accessToken: accessToken,
                 refreshToken: refreshToken
             }, "Login successful");
+        } catch (err) {
+            return sendErrorResponse(res, err);
+        }
+    }
+
+    async forgotPassword(req: Request, res: Response) {
+        try {
+            let idunno: any;
+            const {email} = req.body;
+            const userTest = axios("https://user-service:3000/users/23", {timeout: 20_000})
+                .then((value) => {
+                    idunno = value;
+                }).catch((error) => {
+                    if (axios.isCancel(error)) {
+                        console.error('Request timed out:', error.message);
+                    } else {
+                        console.error(`Request error: ${error.message}`);
+                    }
+                    idunno = "Empty man"
+                    throw error; // Re-throw the error for the calling code to handle
+                });
+
+            return sendSuccessResponse(res, idunno, "Request");
         } catch (err) {
             return sendErrorResponse(res, err);
         }

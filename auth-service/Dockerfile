@@ -5,6 +5,7 @@ RUN npm install -g nodemon
 WORKDIR /twitter-api/auth-service
 
 COPY package.json .
+COPY package.json .
 
 RUN npm install
 

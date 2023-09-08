@@ -7,7 +7,7 @@ import jwt, {JwtPayload} from "jsonwebtoken";
 import {CustomError} from "../utils/CustomError";
 import {config} from "../config/config";
 import {UserDocument} from "../model/user.model";
-import axios from "axios";
+import axios, {AxiosResponse, AxiosError} from "axios";
 
 class AuthController {
 
@@ -113,22 +113,37 @@ class AuthController {
 
     async forgotPassword(req: Request, res: Response) {
         try {
-            let idunno: any;
             const {email} = req.body;
-            const userTest = axios("https://user-service:3000/users/23", {timeout: 20_000})
-                .then((value) => {
-                    idunno = value;
-                }).catch((error) => {
-                    if (axios.isCancel(error)) {
-                        console.error('Request timed out:', error.message);
-                    } else {
-                        console.error(`Request error: ${error.message}`);
-                    }
-                    idunno = "Empty man"
-                    throw error; // Re-throw the error for the calling code to handle
-                });
 
-            return sendSuccessResponse(res, idunno, "Request");
+            // Set the timeout to 20 seconds (20,000 milliseconds)
+            const timeout = 20000;
+            let resp: any;
+            const response = await axios.get("http://user-service:3001/users/64fa7e9a46401a2f787d33b3")
+            if (response.status == 200) {
+                console.log("Checkpoint B")
+                return sendSuccessResponse(res, response, "Request")
+            } else {
+                console.log("Checkpoint C")
+                return sendSuccessResponse(res, null, "User not found", 404)
+            }
+            // axios
+            //     .get("http://user-service:3001/users/23", {timeout})
+            //     .then((response: AxiosResponse) => {
+            //         // Handle the successful response here
+            //         resp = response
+            //     })
+            //     .catch((error: AxiosError) => {
+            //         if (axios.isCancel(error)) {
+            //             console.error('Request timed out:', error.message);
+            //             // Handle timeout error here
+            //             return sendErrorResponse(res, error, "Request timed out");
+            //         } else {
+            //             console.error(`Request error: ${error}`);
+            //             // Handle other errors here
+            //             return sendErrorResponse(res, error);
+            //         }
+            //     });
+            // return sendSuccessResponse(res, resp, "Request");
         } catch (err) {
             return sendErrorResponse(res, err);
         }

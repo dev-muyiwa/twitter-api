@@ -5,6 +5,8 @@ import {checkAuthorizationToken} from "@dev-muyiwa/shared-service";
 const userRouter: Router = express.Router();
 const userController: UserController = new UserController();
 
-userRouter.post("/:userId", checkAuthorizationToken, userController.getUser)
+// userRouter.get("/:userId", checkAuthorizationToken, userController.getUser)
+userRouter.get("/:userId", userController.getUser)
+// userRouter.get("/:userId", userController.getUserInfo)
 
 export default userRouter;

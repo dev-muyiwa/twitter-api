@@ -5,15 +5,25 @@ import {UserDocument, UserModel} from "../model/user.model";
 class UserController {
     async getUser(req: AuthenticatedRequest, res: Response) {
         try {
-            const authUser: UserDocument|null = await UserModel.findById(req.userId);
+            const authUser: UserDocument | null = await UserModel.findById(req.params.userId);
             if (!authUser) {
                 throw new CustomError("User does not exist");
             }
+            console.log("Checkpoint A")
 
             return sendSuccessResponse(res, authUser.getBasicInfo(), "User fetched")
         } catch (err) {
             return sendErrorResponse(res, err);
         }
+    }
+
+    async getUserInfo(req: Request, res: Response) {
+        const authUser: UserDocument | null = await UserModel.findById(req.params.userId);
+        if (!authUser) {
+            return null;
+        }
+
+        return authUser.getBasicInfo();
     }
 
     async updateUser(req: AuthenticatedRequest, res: Response) {

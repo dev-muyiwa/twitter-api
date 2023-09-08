@@ -16,11 +16,21 @@ class UserController {
                 console.log("Checkpoint A")
 
                 return sendSuccessResponse(res, authUser.getBasicInfo(), "User fetched")
+                // return sendSuccessResponse(res, authUser.getBasicInfo(), "User fetched")
             }
         // } catch (err) {
         //     console.log("Checkpoint C")
         //     return sendErrorResponse(res, err);
         // }
+    }
+
+    async getUserByEmail(req: Request, res: Response) {
+        const user: UserDocument|null = await UserModel.findOne({email: req.params.email});
+        if (!user) {
+            const err: CustomError = new CustomError("User does not exist");
+            return sendErrorResponse(res, err);
+        }
+        return sendSuccessResponse(res, user.getBasicInfo(), "User fetched")
     }
 
     async getUserInfo(req: Request, res: Response) {

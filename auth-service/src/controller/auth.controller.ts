@@ -8,6 +8,7 @@ import {CustomError} from "../utils/CustomError";
 import {config} from "../config/config";
 import {UserDocument} from "../model/user.model";
 import axios, {AxiosResponse, AxiosError} from "axios";
+import {maskEmail} from "../utils/helper";
 
 class AuthController {
 
@@ -112,54 +113,31 @@ class AuthController {
     }
 
     async forgotPassword(req: Request, res: Response) {
-        // try {
-        const {email} = req.body;
-        const {id} = req.body
+        try {
+            const {email} = req.body;
 
-        // Set the timeout to 20 seconds (20,000 milliseconds)
-        const timeout = 20000;
-        let resp: any;
-        axios.get(`http://user-service:3001/users/${id}`, {
-            validateStatus: (status) => {
-                return (status >= 200 && status < 505)
+            const axiosResponse: AxiosResponse = await axios.get(`http://user-service:3001/users/internal/${email}`, {
+                validateStatus: (status) => {
+                    return (status >= 200 && status < 505)
+                },
+                timeout: 10000,
+                timeoutErrorMessage: "Request timed out"
+            })
+
+            const response  = axiosResponse.data
+            if (axiosResponse.status !== 200 && !response.data) {
+                return sendSuccessResponse(res, null, response.message, axiosResponse.status)
             }
-        })
-            .then((response: AxiosResponse) => {
 
-                console.log("Response.........", response.status)
-                if (response.status == 200) {
-                    console.log("Checkpoint B", response.data)
-                    return sendSuccessResponse(res, response.data, "Request")
-                } else {
-                    console.log("Checkpoint C")
-                    return sendSuccessResponse(res, null, "User not found", 404)
-                }
-            }).catch((err) => {
-            console.log("Log breakpoint")
-            console.log("Error is:", err)
+            // Send a forgot password event using kafka.
+
+
+            const maskedEmail: string = maskEmail(response.data.email);
+            return sendSuccessResponse(res, null, `Password reset email sent to ${maskedEmail}`)
+
+        } catch (err) {
             return sendErrorResponse(res, err);
-        })
-        // axios
-        //     .get("http://user-service:3001/users/23", {timeout})
-        //     .then((response: AxiosResponse) => {
-        //         // Handle the successful response here
-        //         resp = response
-        //     })
-        //     .catch((error: AxiosError) => {
-        //         if (axios.isCancel(error)) {
-        //             console.error('Request timed out:', error.message);
-        //             // Handle timeout error here
-        //             return sendErrorResponse(res, error, "Request timed out");
-        //         } else {
-        //             console.error(`Request error: ${error}`);
-        //             // Handle other errors here
-        //             return sendErrorResponse(res, error);
-        //         }
-        //     });
-        // return sendSuccessResponse(res, resp, "Request");
-        // } catch (err) {
-        //     return sendErrorResponse(res, err);
-        // }
+        }
     }
 }
 

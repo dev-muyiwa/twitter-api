@@ -1,4 +1,4 @@
-import {Request, Response} from "express";
+import {Request, response, Response} from "express";
 import {sendErrorResponse, sendSuccessResponse} from "../handlers/ResponseHandlers";
 import {kafkaConsumer, kafkaProducer} from "../index";
 import {authService} from "../service/auth.service";
@@ -112,41 +112,54 @@ class AuthController {
     }
 
     async forgotPassword(req: Request, res: Response) {
-        try {
-            const {email} = req.body;
+        // try {
+        const {email} = req.body;
+        const {id} = req.body
 
-            // Set the timeout to 20 seconds (20,000 milliseconds)
-            const timeout = 20000;
-            let resp: any;
-            const response = await axios.get("http://user-service:3001/users/64fa7e9a46401a2f787d33b3")
-            if (response.status == 200) {
-                console.log("Checkpoint B")
-                return sendSuccessResponse(res, response, "Request")
-            } else {
-                console.log("Checkpoint C")
-                return sendSuccessResponse(res, null, "User not found", 404)
+        // Set the timeout to 20 seconds (20,000 milliseconds)
+        const timeout = 20000;
+        let resp: any;
+        axios.get(`http://user-service:3001/users/${id}`, {
+            validateStatus: (status) => {
+                return (status >= 200 && status < 505)
             }
-            // axios
-            //     .get("http://user-service:3001/users/23", {timeout})
-            //     .then((response: AxiosResponse) => {
-            //         // Handle the successful response here
-            //         resp = response
-            //     })
-            //     .catch((error: AxiosError) => {
-            //         if (axios.isCancel(error)) {
-            //             console.error('Request timed out:', error.message);
-            //             // Handle timeout error here
-            //             return sendErrorResponse(res, error, "Request timed out");
-            //         } else {
-            //             console.error(`Request error: ${error}`);
-            //             // Handle other errors here
-            //             return sendErrorResponse(res, error);
-            //         }
-            //     });
-            // return sendSuccessResponse(res, resp, "Request");
-        } catch (err) {
+        })
+            .then((response: AxiosResponse) => {
+
+                console.log("Response.........", response.status)
+                if (response.status == 200) {
+                    console.log("Checkpoint B", response.data)
+                    return sendSuccessResponse(res, response.data, "Request")
+                } else {
+                    console.log("Checkpoint C")
+                    return sendSuccessResponse(res, null, "User not found", 404)
+                }
+            }).catch((err) => {
+            console.log("Log breakpoint")
+            console.log("Error is:", err)
             return sendErrorResponse(res, err);
-        }
+        })
+        // axios
+        //     .get("http://user-service:3001/users/23", {timeout})
+        //     .then((response: AxiosResponse) => {
+        //         // Handle the successful response here
+        //         resp = response
+        //     })
+        //     .catch((error: AxiosError) => {
+        //         if (axios.isCancel(error)) {
+        //             console.error('Request timed out:', error.message);
+        //             // Handle timeout error here
+        //             return sendErrorResponse(res, error, "Request timed out");
+        //         } else {
+        //             console.error(`Request error: ${error}`);
+        //             // Handle other errors here
+        //             return sendErrorResponse(res, error);
+        //         }
+        //     });
+        // return sendSuccessResponse(res, resp, "Request");
+        // } catch (err) {
+        //     return sendErrorResponse(res, err);
+        // }
     }
 }
 

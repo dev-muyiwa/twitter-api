@@ -3,18 +3,24 @@ import {AuthenticatedRequest, CustomError, sendErrorResponse, sendSuccessRespons
 import {UserDocument, UserModel} from "../model/user.model";
 
 class UserController {
-    async getUser(req: AuthenticatedRequest, res: Response) {
-        try {
+    async getUser(req: Request, res: Response): Promise<Response> {
+        // try {
             const authUser: UserDocument | null = await UserModel.findById(req.params.userId);
+            console.log("Auth user:", authUser)
             if (!authUser) {
-                throw new CustomError("User does not exist");
-            }
-            console.log("Checkpoint A")
+                console.log("Checkpoint B")
+                // throw new CustomError("User does not exist");
+                const err = new CustomError("User does not exist");
+                return sendErrorResponse(res, err);
+            } else {
+                console.log("Checkpoint A")
 
-            return sendSuccessResponse(res, authUser.getBasicInfo(), "User fetched")
-        } catch (err) {
-            return sendErrorResponse(res, err);
-        }
+                return sendSuccessResponse(res, authUser.getBasicInfo(), "User fetched")
+            }
+        // } catch (err) {
+        //     console.log("Checkpoint C")
+        //     return sendErrorResponse(res, err);
+        // }
     }
 
     async getUserInfo(req: Request, res: Response) {

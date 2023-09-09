@@ -1,4 +1,4 @@
-import {Request, response, Response} from "express";
+import {Request, Response} from "express";
 import {sendErrorResponse, sendSuccessResponse} from "../handlers/ResponseHandlers";
 import {kafkaConsumer, kafkaProducer} from "../index";
 import {authService} from "../service/auth.service";
@@ -7,7 +7,7 @@ import jwt, {JwtPayload} from "jsonwebtoken";
 import {CustomError} from "../utils/CustomError";
 import {config} from "../config/config";
 import {UserDocument} from "../model/user.model";
-import axios, {AxiosResponse, AxiosError} from "axios";
+import axios, {AxiosResponse} from "axios";
 import {maskEmail} from "../utils/helper";
 
 class AuthController {
@@ -124,17 +124,49 @@ class AuthController {
                 timeoutErrorMessage: "Request timed out"
             })
 
-            const response  = axiosResponse.data
+            const response = axiosResponse.data
             if (axiosResponse.status !== 200 && !response.data) {
                 return sendSuccessResponse(res, null, response.message, axiosResponse.status)
             }
 
-            // Send a forgot password event using kafka.
+            const resetToken: string = jwt.sign({
+                email: response.data.email,
+            }, config.server.jwt_reset_secret, {expiresIn: "20m", subject: response.data.id});
+            response.data["resetUrl"] = `${config.server.url}/auth/reset-password/${resetToken}`
 
+            await kafkaProducer.send({
+                topic: "forgot-password",
+                messages: [{value: JSON.stringify(response.data)}]
+            })
 
             const maskedEmail: string = maskEmail(response.data.email);
             return sendSuccessResponse(res, null, `Password reset email sent to ${maskedEmail}`)
 
+        } catch (err) {
+            return sendErrorResponse(res, err);
+        }
+    }
+
+    async resetPassword(req: Request, res: Response) {
+        try {
+            const {newPassword} = req.body;
+            const {resetToken} = req.params
+            const decodedJwt = jwt.verify(resetToken, config.server.jwt_reset_secret) as JwtPayload;
+
+            const email = decodedJwt.email;
+            console.log("Reset email:", email);
+            const axiosResponse: AxiosResponse = await axios.get(`http://user-service:3001/users/internal/${email}`, {
+                validateStatus: (status) => {
+                    return (status >= 200 && status < 505)
+                },
+                timeout: 10000,
+                timeoutErrorMessage: "Request timed out"
+            })
+
+            const response = axiosResponse.data
+            if (axiosResponse.status !== 200 && !response.data) {
+                return sendSuccessResponse(res, null, response.message, axiosResponse.status)
+            }
         } catch (err) {
             return sendErrorResponse(res, err);
         }

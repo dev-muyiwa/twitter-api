@@ -1,28 +1,27 @@
-import {Consumer, Producer} from "kafkajs";
 import {databaseSetup} from "./config/database";
 import {config} from "./config/config";
 import app from "./config/app";
-import KafkaService from "./utils/kafka";
+import {KafkaService} from "@dev-muyiwa/shared-service";
 
 
 const port: number = config.server.port;
-let kafkaProducer: Producer, kafkaConsumer: Consumer;
+const kafka: KafkaService = new KafkaService(["kafka:9093"], "user-service");
+const kafkaProducer = kafka.Producer;
+const kafkaConsumer = kafka.Consumer;
 
 databaseSetup().then(() => {
     console.log("Database connection successful...");
 
-    const kafka: KafkaService = new KafkaService(["kafka:9093"], "user-service");
-
-    kafka.connectProducer().then((producer) => {
-        kafkaProducer = producer
+    kafka.connectProducer().then(() => {
         console.log("Connected to kafka producer.")
     }).catch((err) => console.log("Error connecting to kafka producer:", err));
 
-    kafka.connectConsumer("user-group").then(async (consumer) => {
-        kafkaConsumer = consumer;
+    kafka.connectConsumer().then(() => {
         console.log("Connected to kafka consumer.");
 
-        app.listen(port, () => console.log("Listening on port", port));
+        app.listen(port, () => {
+            console.log("Listening to user service on port", port)
+        });
 
     }).catch((err) => console.log("Error connecting to kafka consumer:", err));
 }).catch((err) => {

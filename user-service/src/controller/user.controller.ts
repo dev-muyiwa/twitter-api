@@ -4,42 +4,25 @@ import {UserDocument, UserModel} from "../model/user.model";
 
 class UserController {
     async getUser(req: Request, res: Response): Promise<Response> {
-        // try {
+        try {
             const authUser: UserDocument | null = await UserModel.findById(req.params.userId);
-            console.log("Auth user:", authUser)
             if (!authUser) {
-                console.log("Checkpoint B")
-                // throw new CustomError("User does not exist");
-                const err = new CustomError("User does not exist");
-                return sendErrorResponse(res, err);
-            } else {
-                console.log("Checkpoint A")
-
-                return sendSuccessResponse(res, authUser.getBasicInfo(), "User fetched")
-                // return sendSuccessResponse(res, authUser.getBasicInfo(), "User fetched")
+                throw new CustomError("User does not exist");
             }
-        // } catch (err) {
-        //     console.log("Checkpoint C")
-        //     return sendErrorResponse(res, err);
-        // }
+
+            return sendSuccessResponse(res, authUser.getBasicInfo(), "User fetched")
+        } catch (err) {
+            return sendErrorResponse(res, err);
+        }
     }
 
     async getUserByEmail(req: Request, res: Response) {
-        const user: UserDocument|null = await UserModel.findOne({email: req.params.email});
+        const user: UserDocument | null = await UserModel.findOne({email: req.params.email});
         if (!user) {
             const err: CustomError = new CustomError("User does not exist");
             return sendErrorResponse(res, err);
         }
         return sendSuccessResponse(res, user.getBasicInfo(), "User fetched")
-    }
-
-    async getUserInfo(req: Request, res: Response) {
-        const authUser: UserDocument | null = await UserModel.findById(req.params.userId);
-        if (!authUser) {
-            return null;
-        }
-
-        return authUser.getBasicInfo();
     }
 
     async updateUser(req: AuthenticatedRequest, res: Response) {

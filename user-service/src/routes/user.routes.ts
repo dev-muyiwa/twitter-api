@@ -7,10 +7,8 @@ const userController: UserController = new UserController();
 
 // userRouter.get("/:userId", checkAuthorizationToken, userController.getUser)
 userRouter.get("/:userId", userController.getUser)
-// userRouter.get("/:userId", userController.getUserInfo)
 
 // Internal routes
-// userRouter.route("/internal")
 userRouter.get("/internal/:email", userController.getUserByEmail);
 
 export default userRouter;

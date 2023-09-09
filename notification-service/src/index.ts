@@ -25,6 +25,7 @@ kafka.connectConsumer()
         await kafkaConsumer.subscribe({topic: 'user-otp-sms'});
         await kafkaConsumer.subscribe({topic: 'user-verification'});
         await kafkaConsumer.subscribe({topic: 'user-registration'});
+        await kafkaConsumer.subscribe({topic: 'forgot-password'});
 
         app.listen(port, async () => {
             console.log(`Listening to notification service on port ${port}...`);
@@ -51,6 +52,12 @@ kafka.connectConsumer()
                                 undefined,
                                 "Hello, welcome to this API. This is a test deployment for 'user-registration' topic.");
                             console.log("Email sent to", recipient);
+                            break;
+                        }
+                        case "forgot-password": {
+                            const user = JSON.parse(`${message.value}`);
+                            await sendMail(user.email, "Password reset notification - Twitter",
+                                `<p>Hello, ${user.firstName} ${user.lastName}! \nHere is your password reset link. <a href="${user.resetUrl}">Reset password</a></p>`)
                             break;
                         }
                         default: {

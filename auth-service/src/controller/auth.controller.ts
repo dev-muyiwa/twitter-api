@@ -167,6 +167,12 @@ class AuthController {
             if (axiosResponse.status !== 200 && !response.data) {
                 return sendSuccessResponse(res, null, response.message, axiosResponse.status)
             }
+
+            // Generate an access token to update the user
+            // make a post request to update the user
+
+
+            return sendSuccessResponse(res, null, "Password reset. Please login to continue");
         } catch (err) {
             return sendErrorResponse(res, err);
         }

@@ -45,22 +45,6 @@ services:
     networks:
       - api-network
 
-#  auth-service:
-#    build: ./auth-service
-#    container_name: auth-service
-#    ports:
-#      - "3000:3000"
-#    env_file:
-#      - auth-service/.env
-#    depends_on:
-#      - gateway
-#      - kafka
-#    volumes:
-#      - ./auth-service:/twitter-api/auth-service
-#      - node-modules-auth:/twitter-api/auth-service/node_modules
-#    networks:
-#      - api-network
-
   account:
     build: ./account
     container_name: account
@@ -93,6 +77,24 @@ services:
     depends_on:
       - kafka
 
+  followings:
+    build: ./followings
+    container_name: followings
+    ports:
+      - "3003:3000"
+    depends_on:
+      - gateway
+      - kafka
+      - followings-db
+    env_file:
+      - followings/.env
+    volumes:
+      - ./followings:/twitter-api/followings
+      - node-modules-followings:/twitter-api/followings/node_modules
+    networks:
+      - api-network
+
+
   user-db:
     image: mongodb/mongodb-community-server:6.0.4-ubi8
     container_name: user-db
@@ -106,14 +108,27 @@ services:
     networks:
       - api-network
 
+  followings-db:
+    image: mongodb/mongodb-community-server:6.0.4-ubi8
+    container_name: followings-db
+    environment:
+      MONGODB_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGODB_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongodb-followings:/data/db
+    networks:
+      - api-network
+
 volumes:
   mongodb-user:
-  rabbit-mq:
+  mongodb-followings:
   kafka:
   zookeeper:
-#  node-modules-auth:
   node-modules-account:
   node-modules-notification:
+  node-modules-followings:
 
 
 networks:

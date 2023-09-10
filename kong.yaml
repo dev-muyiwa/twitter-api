@@ -15,6 +15,7 @@ services:
         paths:
           - /users
 
+
 plugins:
   - name: rate-limiting
     config:

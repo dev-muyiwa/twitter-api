@@ -140,8 +140,7 @@ class AuthController {
             })
 
             const maskedEmail: string = maskEmail(response.data.email);
-            return sendSuccessResponse(res, null, `Password reset email sent to ${maskedEmail}`)
-
+            return sendSuccessResponse(res, null, `Password reset email sent to ${maskedEmail}`);
         } catch (err) {
             return sendErrorResponse(res, err);
         }

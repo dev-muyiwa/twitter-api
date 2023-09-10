@@ -40,7 +40,7 @@ const findUser = async (username: string) => {
         throw new CustomError("Invalid username/password.", CustomError.BAD_REQUEST);
     }
 
-    return user;
+    return user.id;
 }
 
 const verify = async () => {

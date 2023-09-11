@@ -94,6 +94,23 @@ services:
     networks:
       - api-network
 
+  tweets:
+    build: ./tweets
+    container_name: tweets
+    ports:
+      - "3004:3000"
+    depends_on:
+      - gateway
+      - kafka
+      - tweets-db
+    env_file:
+      - tweets/.env
+    volumes:
+      - ./tweets:/twitter-api/tweets
+      - node-modules-tweets:/twitter-api/tweets/node_modules
+    networks:
+      - api-network
+
 
   user-db:
     image: mongodb/mongodb-community-server:6.0.4-ubi8
@@ -121,14 +138,29 @@ services:
     networks:
       - api-network
 
+  tweets-db:
+    image: mongodb/mongodb-community-server:6.0.4-ubi8
+    container_name: tweets-db
+    environment:
+      MONGODB_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGODB_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    ports:
+      - "27020:27017"
+    volumes:
+      - mongodb-tweets:/data/db
+    networks:
+      - api-network
+
 volumes:
   mongodb-user:
   mongodb-followings:
+  mongodb-tweets:
   kafka:
   zookeeper:
   node-modules-account:
   node-modules-notification:
   node-modules-followings:
+  node-modules-tweets:
 
 
 networks:

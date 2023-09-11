@@ -11,7 +11,7 @@ class UserController {
         try {
             const {handle} = req.params;
             const user: UserDocument = await findUser(handle);
-            // Get the following_count, follower_count, tweets, likes and other things.
+            // Get the following_count, follower_count and other things.
 
 
             let data: {} = {};

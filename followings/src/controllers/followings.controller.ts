@@ -4,6 +4,24 @@ import {FollowingDocument, FollowingModel} from "../models/followings.model";
 
 class FollowingsController {
 
+    async checkFollowingStatus(req: Request, res: Response) {
+        try {
+            const {userId} = req.params;
+            const {followerId} = req.body;
+
+            const existingRelationship = await FollowingModel.exists({user: followerId, following: userId});
+            const reverseRelationship = await FollowingModel.exists({user: userId, following: followerId});
+
+            const data: object = {
+                isFollowing: existingRelationship !== null,
+                isFollower: reverseRelationship !== null
+            }
+            return sendSuccessResponse(res, data, "Following status");
+        } catch (err) {
+            return sendErrorResponse(res, err);
+        }
+    }
+
     async getFollowers(req: Request, res: Response) {
         try {
             const {userId} = req.params;

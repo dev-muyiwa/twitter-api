@@ -8,5 +8,6 @@ followingsRouter.get("/:userId/followers", followingsController.getFollowers);
 followingsRouter.get("/:userId/followings", followingsController.getFollowings);
 followingsRouter.post("/:userId/follow", followingsController.followHandle);
 followingsRouter.post("/:userId/unfollow", followingsController.unfollowHandle);
+followingsRouter.post("/:userId/following-status", followingsController.checkFollowingStatus);
 
 export default followingsRouter;

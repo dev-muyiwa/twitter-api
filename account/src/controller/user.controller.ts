@@ -10,12 +10,17 @@ class UserController {
     async getUser(req: AuthenticatedRequest, res: Response): Promise<Response> {
         try {
             const {handle} = req.params;
-            const authUser: UserDocument = await findUserBy(req.userId);
             const user: UserDocument = await findUser(handle);
-            // Get the followings, followers, tweets, likes and other things.
-            // Check if the auth user follows the user and vice versa to create a "isFollowing" and "isFollowed" boolean fields
+            // Get the following_count, follower_count, tweets, likes and other things.
 
-            return sendSuccessResponse(res, user.getDetailedInfo(), "User fetched")
+
+            let data: {} = {};
+            if (user.id !== req.userId) {
+                const response: AxiosResponse = await axios.post(`http://followings:3003/${user.id}/following-status`, {followerId: req.userId});
+                data = response.data.data;
+            }
+
+            return sendSuccessResponse(res, {...user.getDetailedInfo(), ...data}, "User fetched")
         } catch (err) {
             return sendErrorResponse(res, err);
         }
@@ -26,7 +31,7 @@ class UserController {
             const {firstName, lastName, displayName, bio} = req.body;
             const user: UserDocument = await findUserBy(req.userId);
 
-            if (user.id !== req.params.userId) {
+            if (user.handle !== req.params.handle) {
                 throw new CustomError("Unable to modify this resource", CustomError.FORBIDDEN);
             }
 
@@ -47,6 +52,10 @@ class UserController {
         try {
             const {currentPassword, newPassword} = req.body;
             const user: UserDocument = await findUserBy(req.userId);
+
+            if (user.handle !== req.params.handle) {
+                throw new CustomError("Unable to modify user password", CustomError.FORBIDDEN);
+            }
 
             if (currentPassword === newPassword) {
                 throw new CustomError("New password cannot be same as current password", CustomError.BAD_REQUEST);

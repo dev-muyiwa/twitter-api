@@ -150,6 +150,19 @@ class UserController {
             return sendErrorResponse(res, err);
         }
     }
+
+    async getTweets(req: AuthenticatedRequest, res: Response) {
+        try {
+            const response: AxiosResponse = await axios.post(`http://tweets:3004/tweets`);
+            // if (response.status !== 201) {
+            //     throw new CustomError(response.data.message, response.status);
+            // } else {
+                return sendSuccessResponse(res, response.data.data, response.data.message, response.status);
+            // }
+        } catch (err) {
+            return sendErrorResponse(res, err);
+        }
+    }
 }
 
 export default UserController;

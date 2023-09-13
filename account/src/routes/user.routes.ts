@@ -19,6 +19,7 @@ userRouter.get("/:handle/followings", userController.getFollowings);
 userRouter.post("/:handle/follow", userController.followHandle);
 userRouter.post("/:handle/unfollow", userController.unfollowHandle);
 
+userRouter.get("/:handle/tweets", userController.getTweets);
 
 
 export default userRouter;

@@ -6,6 +6,7 @@ WORKDIR /twitter-api/tweets
 
 COPY package.json .
 
+RUN npm install @dev-muyiwa/shared-service
 RUN npm install
 
 COPY . .

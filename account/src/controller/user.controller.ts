@@ -153,7 +153,9 @@ class UserController {
 
     async getTweets(req: AuthenticatedRequest, res: Response) {
         try {
-            const response: AxiosResponse = await axios.get(`http://tweets:3004/tweets`);
+            const {isDraft} = req.query;
+            const url: string = (isDraft && isDraft == "true") ? "http://tweets:3004/tweets?isDraft=true" : "http://tweets:3004/tweets";
+            const response: AxiosResponse = await axios.get(url);
             if (response.status !== 200) {
                 throw new CustomError(response.data.message, response.status);
             } else {
@@ -163,6 +165,7 @@ class UserController {
             return sendErrorResponse(res, err);
         }
     }
+
 }
 
 export default UserController;

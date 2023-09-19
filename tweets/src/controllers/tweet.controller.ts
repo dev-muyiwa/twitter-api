@@ -3,8 +3,9 @@ import {AuthenticatedRequest, CustomError, sendErrorResponse, sendSuccessRespons
 import {TweetDocument, TweetModel} from "../models/tweet.model";
 
 class TweetController {
+    // For every authenticated tweet, check if the user exists to get their ID.
     async createTweet(req: AuthenticatedRequest, res: Response) {
-        try{
+        try {
             return sendSuccessResponse(res, null, "Tweet created", 201);
         } catch (err) {
             return sendErrorResponse(res, err);
@@ -12,34 +13,31 @@ class TweetController {
     }
 
     async getTweets(req: Request, res: Response) {
-        try{
+        try {
             const {userId} = req.params;
-            const tweets: TweetDocument[] = await TweetModel.find({_id: userId, isDraft: false});
-            return sendSuccessResponse(res, tweets, "Tweets fetched");
-        } catch (err) {
-            return sendErrorResponse(res, err);
-        }
-    }
+            const {isDraft} = req.query;
 
-    async getDrafts(req: AuthenticatedRequest, res: Response) {
-        try{
-            const {userId} = req.params;
-            const drafts: TweetDocument[] = await TweetModel.find({_id: userId, isDraft: true});
-            return sendSuccessResponse(res, drafts, "Drafts fetched");
+            const message: string = (isDraft == "true") ? "Tweets fetched" : "Drafts fetched";
+
+            const tweets: TweetDocument[] = (isDraft == "true") ?
+                await TweetModel.find({_id: userId, isDraft: true}) :
+                await TweetModel.find({_id: userId, isDraft: false});
+
+            return sendSuccessResponse(res, tweets, message);
         } catch (err) {
             return sendErrorResponse(res, err);
         }
     }
 
     async getTweet(req: Request, res: Response) {
-        try{
+        try {
             const {tweetId} = req.params;
-            const tweet: TweetDocument|null = await TweetModel.findById(tweetId);
+            const tweet: TweetDocument | null = await TweetModel.findById(tweetId);
             if (!tweet) {
                 throw new CustomError("Tweet does not exist");
             }
 
-            // Increment the view count
+            // Increment the view count if the viewer is unique
 
             return sendSuccessResponse(res, tweet, "Tweet fetched");
         } catch (err) {
@@ -48,9 +46,9 @@ class TweetController {
     }
 
     async deleteTweet(req: AuthenticatedRequest, res: Response) {
-        try{
+        try {
             const {tweetId} = req.params;
-            const tweet: TweetDocument|null = await TweetModel.findOneAndDelete({_id: tweetId, author: req.userId});
+            const tweet: TweetDocument | null = await TweetModel.findOneAndDelete({_id: tweetId, author: req.userId});
 
             if (!tweet) {
                 throw new CustomError("Tweet does not exist");

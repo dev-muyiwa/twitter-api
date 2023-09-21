@@ -22,17 +22,3 @@ plugins:
       minute: 5
       policy: local
       error_message: "API rate limit exceeded. Try again in a minute."
-#  - name: jwt
-#    config:
-#      key_claim_name: "sub"
-#      secret: "${KONG_JWT_SECRET}"
-#      secret_is_base64: false
-#
-#
-#routes:
-#  - name: jwt-auth-route
-#    paths:
-#      - /secure-endpoint
-#    plugins:
-#      - name: jwt
-#        run_on: first

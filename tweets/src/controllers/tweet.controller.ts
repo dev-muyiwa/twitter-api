@@ -6,6 +6,7 @@ class TweetController {
     // For every authenticated tweet, check if the user exists to get their ID.
     async createTweet(req: AuthenticatedRequest, res: Response) {
         try {
+            // Check if a user with refresh token exists within the database
             return sendSuccessResponse(res, null, "Tweet created", 201);
         } catch (err) {
             return sendErrorResponse(res, err);

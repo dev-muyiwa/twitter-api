@@ -69,14 +69,14 @@ class AuthController {
                     messages: [{value: JSON.stringify({...user.getBasicInfo(), activationUrl: activationUrl})}]
                 });
 
-                throw new CustomError("Account isn't verified yet. Check email for activation link", CustomError.UNAUTHORIZED)
+                throw new CustomError("Account isn't verified yet. CheJwtPayloadck email for activation link", CustomError.UNAUTHORIZED)
             }
 
             let refreshToken: string;
             let decodedJwt: JwtPayload | null = null;
 
             if (user.refreshToken) {
-                decodedJwt = jwt.verify(user.refreshToken, config.server.jwt_refresh_secret) as JwtPayload;
+                decodedJwt = jwt.decode(user.refreshToken) as JwtPayload;
             }
 
             if (!decodedJwt || decodedJwt.exp! < Date.now() / 1000) {

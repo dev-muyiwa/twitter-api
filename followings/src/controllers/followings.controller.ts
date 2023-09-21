@@ -11,10 +11,14 @@ class FollowingsController {
 
             const existingRelationship = await FollowingModel.exists({user: followerId, following: userId});
             const reverseRelationship = await FollowingModel.exists({user: userId, following: followerId});
+            const followers: number = await FollowingModel.count({following: userId});
+            const followings: number = await FollowingModel.count({user: userId});
 
             const data: object = {
                 isFollowing: existingRelationship !== null,
-                isFollower: reverseRelationship !== null
+                isFollower: reverseRelationship !== null,
+                followers: followers,
+                followings: followings
             }
             return sendSuccessResponse(res, data, "Following status");
         } catch (err) {

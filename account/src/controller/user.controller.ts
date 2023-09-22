@@ -163,7 +163,6 @@ class UserController {
             return sendErrorResponse(res, err);
         }
     }
-
 }
 
 export default UserController;

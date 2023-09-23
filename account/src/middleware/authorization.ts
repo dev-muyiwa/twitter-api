@@ -19,4 +19,18 @@ const authorizeToken = async (req: AuthenticatedRequest, res: Response, next: Ne
     }
 }
 
-export {authorizeToken};
+const verifyResourceAuthor = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<Response | void> => {
+    try {
+        const {userId} = req.params;
+
+        if (req.userId != userId) {
+            throw new CustomError("Unable to access/modify this resource", CustomError.FORBIDDEN);
+        }
+
+        return next();
+    } catch (err) {
+        return sendErrorResponse(res, err);
+    }
+}
+
+export {authorizeToken, verifyResourceAuthor};

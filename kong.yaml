@@ -15,6 +15,13 @@ services:
         paths:
           - /users
 
+  - name: tweet-service
+    url: http://tweets:3004
+    routes:
+      - name: tweets
+        paths:
+          - /tweets
+
 
 plugins:
   - name: rate-limiting

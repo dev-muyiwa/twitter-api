@@ -1,5 +1,6 @@
 import {UserDocument, UserModel} from "../model/user.model";
 import {CustomError} from "@dev-muyiwa/shared-service";
+import {isValidObjectId} from "mongoose";
 
 
 const createUser = async () => {
@@ -19,7 +20,7 @@ const findUser = async (username: string) => {
     return user;
 }
 
-const findUserBy = async (id: string|undefined) => {
+const findUserBy = async (id: string | undefined) => {
     const user: UserDocument | null = await UserModel.findById(id);
 
     if (!user) {
@@ -28,7 +29,6 @@ const findUserBy = async (id: string|undefined) => {
 
     return user;
 }
-
 
 
 export {

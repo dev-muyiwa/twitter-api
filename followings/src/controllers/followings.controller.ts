@@ -53,6 +53,9 @@ class FollowingsController {
             const {userId} = req.params;
             const {followingId} = req.body;
 
+            // Check if the 2 users exists
+            // const firstUser = await axios.get("http://account:3001/users/")
+
             const existingRelationship: FollowingDocument | null = await FollowingModel.findOne({
                 user: userId,
                 following: followingId

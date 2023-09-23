@@ -9,8 +9,9 @@ import {config} from "../config/config";
 class UserController {
     async getUser(req: AuthenticatedRequest, res: Response): Promise<Response> {
         try {
-            const {handle} = req.params;
-            const user: UserDocument = await findUser(handle);
+            const {userId} = req.params;
+            const id = (userId == "me") ? req.userId : userId;
+            const user: UserDocument = await findUserBy(id);
 
             let data: {} = {};
             if (user.id !== req.userId) {
@@ -29,10 +30,6 @@ class UserController {
             const {firstName, lastName, displayName, bio} = req.body;
             const user: UserDocument = await findUserBy(req.userId);
 
-            if (user.handle !== req.params.handle) {
-                throw new CustomError("Unable to modify this resource", CustomError.FORBIDDEN);
-            }
-
             await user.updateOne({
                 firstName: firstName ?? user.firstName,
                 lastName: lastName ?? user.lastName,
@@ -50,10 +47,6 @@ class UserController {
         try {
             const {currentPassword, newPassword} = req.body;
             const user: UserDocument = await findUserBy(req.userId);
-
-            if (user.handle !== req.params.handle) {
-                throw new CustomError("Unable to modify user password", CustomError.FORBIDDEN);
-            }
 
             if (currentPassword === newPassword) {
                 throw new CustomError("New password cannot be same as current password", CustomError.BAD_REQUEST);
@@ -75,8 +68,8 @@ class UserController {
 
     async getFollowers(req: AuthenticatedRequest, res: Response) {
         try {
-            const {handle} = req.params
-            const followedUser: UserDocument = await findUser(handle);
+            const {userId} = req.params
+            const followedUser: UserDocument = await findUserBy(userId);
 
             const response: AxiosResponse = await axios.get(`http://followings:3003/${followedUser.id}/followers`);
 
@@ -92,8 +85,8 @@ class UserController {
 
     async getFollowings(req: AuthenticatedRequest, res: Response) {
         try {
-            const {handle} = req.params
-            const followedUser: UserDocument = await findUser(handle);
+            const {userId} = req.params
+            const followedUser: UserDocument = await findUserBy(userId);
 
             const response: AxiosResponse = await axios.get(`http://followings:3003/${followedUser.id}/followings`);
 
@@ -109,8 +102,8 @@ class UserController {
 
     async followHandle(req: AuthenticatedRequest, res: Response) {
         try {
-            const {handle} = req.params
-            const followedUser: UserDocument = await findUser(handle);
+            const {userId} = req.params
+            const followedUser: UserDocument = await findUserBy(userId);
             const authUser: UserDocument = await findUserBy(req.userId);
             if (followedUser.id == authUser.id) {
                 throw new CustomError("Unable to follow yourself", CustomError.BAD_REQUEST);
@@ -130,8 +123,8 @@ class UserController {
 
     async unfollowHandle(req: AuthenticatedRequest, res: Response) {
         try {
-            const {handle} = req.params
-            const followedUser: UserDocument = await findUser(handle);
+            const {userId} = req.params
+            const followedUser: UserDocument = await findUserBy(userId);
             const authUser: UserDocument = await findUserBy(req.userId);
             if (followedUser.id == authUser.id) {
                 throw new CustomError("Unable to unfollow yourself", CustomError.BAD_REQUEST);
@@ -151,14 +144,31 @@ class UserController {
 
     async getTweets(req: AuthenticatedRequest, res: Response) {
         try {
-            const {isDraft} = req.query;
-            const url: string = (isDraft && isDraft == "true") ? "http://tweets:3004/tweets?isDraft=true" : "http://tweets:3004/tweets";
-            const response: AxiosResponse = await axios.get(url);
+            const {userId} = req.params;
+            const user: UserDocument = await findUserBy(userId);
+            const response: AxiosResponse = await axios.get(`http://tweets:3004/${user.id}/tweets`);
             if (response.status !== 200) {
                 throw new CustomError(response.data.message, response.status);
             } else {
                 return sendSuccessResponse(res, response.data.data, response.data.message, response.status);
             }
+        } catch (err) {
+            return sendErrorResponse(res, err);
+        }
+    }
+
+    async getDrafts(req: AuthenticatedRequest, res: Response) {
+        try {
+            const {userId} = req.params;
+            const user: UserDocument = await findUserBy(userId);
+
+            const response: AxiosResponse = await axios.get(`http://tweets:3004/${user.id}/drafts`);
+
+            if (response.status !== 200) {
+                throw new CustomError(response.data.message, response.status);
+            }
+
+            return sendSuccessResponse(res, response.data.data, response.data.message);
         } catch (err) {
             return sendErrorResponse(res, err);
         }

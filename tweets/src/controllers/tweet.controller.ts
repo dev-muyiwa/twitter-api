@@ -1,13 +1,42 @@
 import {Request, Response} from "express";
 import {AuthenticatedRequest, CustomError, sendErrorResponse, sendSuccessResponse} from "@dev-muyiwa/shared-service";
 import {TweetDocument, TweetModel} from "../models/tweet.model";
+import axios, {AxiosResponse} from "axios";
 
 class TweetController {
     // For every authenticated tweet, check if the user exists to get their ID.
-    async createTweet(req: AuthenticatedRequest, res: Response) {
+    async createTweet(req: Request, res: Response) {
         try {
-            // Check if a user with refresh token exists within the database
-            return sendSuccessResponse(res, null, "Tweet created", 201);
+            let {parentId, content} = req.body;
+            // Add media
+            const response: AxiosResponse = await axios.get("http://account:3001/users/me", {
+                validateStatus: null,
+                headers: {
+                    "Authorization": `${req.headers.authorization}`
+                }
+            });
+            if (response.status !== 200) {
+                throw new CustomError(response.data.message, response.status);
+            }
+
+            const {id} = response.data.data;
+            const quotedTweet: TweetDocument | null = await TweetModel.findById(parentId);
+
+            const tweet: TweetDocument = await TweetModel.create({
+                parent: quotedTweet?.id,
+                author: id,
+                content: content
+            });
+
+            // separate quotes and retweets
+            if (quotedTweet) {
+                quotedTweet.stats.quotes += 1;
+                await quotedTweet.save();
+            }
+
+            // Push notifications for tagged users
+
+            return sendSuccessResponse(res, tweet, "Tweet created", 201);
         } catch (err) {
             return sendErrorResponse(res, err);
         }
@@ -16,15 +45,22 @@ class TweetController {
     async getTweets(req: Request, res: Response) {
         try {
             const {userId} = req.params;
-            const {isDraft} = req.query;
 
-            const message: string = (isDraft == "true") ? "Tweets fetched" : "Drafts fetched";
+            const tweets: TweetDocument[] = await TweetModel.find({author: userId, isDraft: false});
 
-            const tweets: TweetDocument[] = (isDraft == "true") ?
-                await TweetModel.find({_id: userId, isDraft: true}) :
-                await TweetModel.find({_id: userId, isDraft: false});
+            return sendSuccessResponse(res, tweets, "Tweets fetched");
+        } catch (err) {
+            return sendErrorResponse(res, err);
+        }
+    }
 
-            return sendSuccessResponse(res, tweets, message);
+    async getDrafts(req: Request, res: Response) {
+        try {
+            const {userId} = req.params;
+
+            const drafts: TweetDocument[] = await TweetModel.find({_id: userId, isDraft: true});
+
+            return sendSuccessResponse(res, drafts, "Drafts fetched");
         } catch (err) {
             return sendErrorResponse(res, err);
         }

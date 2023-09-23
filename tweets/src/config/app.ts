@@ -6,7 +6,7 @@ const app: Application = express();
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
-app.use("/tweets", tweetRouter);
+app.use("", tweetRouter);
 
 
 export default app;

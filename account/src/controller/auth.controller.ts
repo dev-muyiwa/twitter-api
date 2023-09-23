@@ -98,6 +98,7 @@ class AuthController {
             }, config.server.jwt_access_secret, {expiresIn: "30m", subject: user.id});
 
             return sendSuccessResponse(res, {
+                ...user.getBasicInfo(),
                 accessToken: accessToken,
                 refreshToken: refreshToken
             }, "Login successful");

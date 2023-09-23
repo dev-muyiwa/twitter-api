@@ -11,10 +11,11 @@ type TweetDocument = Document & {
     content: string;
     media: MediaDocument[];
     stats: {
-        views?: number;
-        likes?: number;
-        retweets?: number;
-        comments?: number;
+        views: number;
+        likes: number;
+        retweets: number;
+        quotes: number;
+        comments: number;
     }
     isDraft?: boolean
 }
@@ -56,6 +57,10 @@ const TweetSchema: Schema<TweetDocument> = new Schema<TweetDocument>({
             default: 0
         },
         retweets: {
+            type: Number,
+            default: 0
+        },
+        quotes: {
             type: Number,
             default: 0
         },

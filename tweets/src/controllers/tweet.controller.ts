@@ -47,6 +47,7 @@ class TweetController {
             const {userId} = req.params;
 
             const tweets: TweetDocument[] = await TweetModel.find({author: userId, isDraft: false});
+            // Paginate the tweets
 
             return sendSuccessResponse(res, tweets, "Tweets fetched");
         } catch (err) {

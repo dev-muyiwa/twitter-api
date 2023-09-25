@@ -102,7 +102,7 @@ services:
     depends_on:
       - gateway
       - kafka
-      - tweets-db
+#      - tweets-db
     env_file:
       - tweets/.env
     volumes:

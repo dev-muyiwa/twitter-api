@@ -23,6 +23,7 @@ userRouter.post("/:userId/unfollow", userController.unfollowHandle);
 
 userRouter.get("/:userId/tweets", userController.getTweets);
 userRouter.get("/:userId/drafts", verifyResourceAuthor, userController.getDrafts);
+userRouter.get("/:userId/bookmarks", verifyResourceAuthor, userController.getBookmarks);
 
 
 export default userRouter;

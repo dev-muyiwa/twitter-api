@@ -9,9 +9,13 @@ tweetRouter.post("/", tweetController.createTweet); // Make route protected
 
 tweetRouter.get("/:userId/tweets",tweetController.getTweets);
 tweetRouter.get("/:userId/drafts",tweetController.getDrafts);
+tweetRouter.get("/:userId/bookmarks", tweetController.getBookmarks);
 
 tweetRouter.get("/:tweetId", tweetController.getTweet);
+
 tweetRouter.delete("/:tweetId", tweetController.deleteTweet); // and this too
+tweetRouter.post("/:tweetId/bookmark", tweetController.addTweetToBookmarks);
+tweetRouter.delete("/:tweetId/bookmark", tweetController.removeTweetFromBookmarks);
 
 
 

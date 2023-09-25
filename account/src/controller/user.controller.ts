@@ -173,6 +173,23 @@ class UserController {
             return sendErrorResponse(res, err);
         }
     }
+
+    async getBookmarks(req: AuthenticatedRequest, res: Response) {
+        try {
+            const {userId} = req.params;
+            const user: UserDocument = await findUserBy(userId);
+
+            const response: AxiosResponse = await axios.get(`http://tweets:3004/${user.id}/bookmarks`);
+
+            if (response.status !== 200) {
+                throw new CustomError(response.data.message, response.status);
+            }
+
+            return sendSuccessResponse(res, response.data.data, response.data.message);
+        } catch (err) {
+            return sendErrorResponse(res, err);
+        }
+    }
 }
 
 export default UserController;

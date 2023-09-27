@@ -1,10 +1,11 @@
-import {Response} from "express";
+import {Request, Response} from "express";
 import {AuthenticatedRequest, CustomError, sendErrorResponse, sendSuccessResponse} from "@dev-muyiwa/shared-service";
-import {UserDocument} from "../model/user.model";
+import {UserDocument, UserModel} from "../model/user.model";
 import {findUser, findUserBy} from "../service/user.service";
 import bcrypt from "bcrypt";
 import axios, {AxiosResponse} from "axios"
 import {config} from "../config/config";
+import jwt, {JwtPayload} from "jsonwebtoken";
 
 class UserController {
     async getUser(req: AuthenticatedRequest, res: Response): Promise<Response> {
@@ -12,10 +13,13 @@ class UserController {
             const {userId} = req.params;
             const id = (userId == "me") ? req.userId : userId;
             const user: UserDocument = await findUserBy(id);
+            // axios.defaults.timeout = 10_000;
 
             let data: {} = {};
             if (user.id !== req.userId) {
-                const response: AxiosResponse = await axios.post(`http://followings:3003/${user.id}/following-status`, {followerId: req.userId});
+                const response: AxiosResponse = await axios.post(`http://followings:3003/${user.id}/following-status`, {followerId: req.userId}, {
+                    validateStatus: null
+                });
                 data = response.data.data;
             }
 
@@ -37,7 +41,7 @@ class UserController {
                 bio: bio ?? user.bio
             });
 
-            return sendSuccessResponse(res, user.getBasicInfo(), "Profile updated");
+            return sendSuccessResponse(res, user.getDetailedInfo(), "Profile updated");
         } catch (err) {
             return sendErrorResponse(res, err);
         }
@@ -57,10 +61,42 @@ class UserController {
             }
 
             await user.updateOne({
-                password: await bcrypt.hash(newPassword, config.server.bcrypt_rounds)
+                passwordHash: await bcrypt.hash(newPassword, config.server.bcrypt_rounds)
             })
 
             return sendSuccessResponse(res, null, "Password updated");
+        } catch (err) {
+            return sendErrorResponse(res, err);
+        }
+    }
+
+    async generateAccessToken(req: Request, res: Response) {
+        try {
+            const {refreshToken} = req.body;
+            const {userId} = req.params;
+
+            const user: UserDocument | null = await UserModel.findOne({_id: userId, refreshToken: refreshToken});
+            if (!user) {
+                throw new CustomError("User does not exist", CustomError.NOT_FOUND);
+            }
+
+            const decodedJwt = jwt.verify(user.refreshToken, config.server.jwt_refresh_secret) as JwtPayload;
+
+            const isExpired = Date.now() >= decodedJwt.exp! * 1000;
+
+            if (isExpired) {
+                throw new CustomError("Refresh token has expired. Login to generate a new token");
+            }
+
+            if (user.id !== decodedJwt.sub) {
+                throw new CustomError("Invalid refresh token", CustomError.BAD_REQUEST);
+            }
+            const accessToken: string = jwt.sign({
+                name: user.firstName + ' ' + user.lastName,
+                role: user.role
+            }, config.server.jwt_access_secret, {expiresIn: "30m", subject: user.id});
+
+            return sendSuccessResponse(res, {accessToken: accessToken}, `Generated access token`, 201);
         } catch (err) {
             return sendErrorResponse(res, err);
         }
@@ -146,7 +182,9 @@ class UserController {
         try {
             const {userId} = req.params;
             const user: UserDocument = await findUserBy(userId);
-            const response: AxiosResponse = await axios.get(`http://tweets:3004/${user.id}/tweets`);
+            const response: AxiosResponse = await axios.get(`http://tweets:3004/${user.id}/tweets`, {
+                validateStatus: null,
+            });
             if (response.status !== 200) {
                 throw new CustomError(response.data.message, response.status);
             } else {
@@ -159,10 +197,14 @@ class UserController {
 
     async getDrafts(req: AuthenticatedRequest, res: Response) {
         try {
-            const {userId} = req.params;
-            const user: UserDocument = await findUserBy(userId);
+            const user: UserDocument = await findUserBy(req.userId);
 
-            const response: AxiosResponse = await axios.get(`http://tweets:3004/${user.id}/drafts`);
+            const response: AxiosResponse = await axios.get(`http://tweets:3004/${user.id}/drafts`, {
+                validateStatus: null,
+                headers: {
+                    "Authorization": `${req.headers.authorization}`
+                }
+            });
 
             if (response.status !== 200) {
                 throw new CustomError(response.data.message, response.status);
@@ -176,10 +218,14 @@ class UserController {
 
     async getBookmarks(req: AuthenticatedRequest, res: Response) {
         try {
-            const {userId} = req.params;
-            const user: UserDocument = await findUserBy(userId);
+            const user: UserDocument = await findUserBy(req.userId);
 
-            const response: AxiosResponse = await axios.get(`http://tweets:3004/${user.id}/bookmarks`);
+            const response: AxiosResponse = await axios.get(`http://tweets:3004/${user.id}/bookmarks`, {
+                validateStatus: null,
+                headers: {
+                    "Authorization": `${req.headers.authorization}`
+                }
+            });
 
             if (response.status !== 200) {
                 throw new CustomError(response.data.message, response.status);

@@ -14,8 +14,11 @@ class AuthController {
         try {
             const {firstName, lastName, handle, email, mobile, password} = req.body;
 
-            const existingUser: UserDocument | null = await UserModel.findOne({
+
+            const existingUser: UserDocument | null = (mobile) ? await UserModel.findOne({
                 $or: [{email: email}, {mobile: mobile}, {handle: handle}]
+            }) : await UserModel.findOne({
+                $or: [{email: email}, {handle: handle}]
             });
             if (existingUser) {
                 throw new CustomError("User(s) exists with this credential(s).", CustomError.BAD_REQUEST);
@@ -69,7 +72,7 @@ class AuthController {
                     messages: [{value: JSON.stringify({...user.getBasicInfo(), activationUrl: activationUrl})}]
                 });
 
-                throw new CustomError("Account isn't verified yet. CheJwtPayloadck email for activation link", CustomError.UNAUTHORIZED)
+                throw new CustomError("Account isn't verified yet. Check email for activation link", CustomError.UNAUTHORIZED)
             }
 
             let refreshToken: string;
@@ -109,7 +112,7 @@ class AuthController {
 
     async activateAccount(req: Request, res: Response): Promise<Response> {
         try {
-            const activationToken = req.query.t as string;
+            const activationToken = req.body.token as string;
             const decodedJwt = jwt.verify(activationToken, config.server.jwt_activation_secret) as JwtPayload | null;
 
             if (!decodedJwt || decodedJwt.exp! < Date.now() / 1000) {

@@ -1,15 +1,18 @@
 import {Request, Response} from "express";
-import {AuthenticatedRequest, CustomError, sendErrorResponse, sendSuccessResponse} from "@dev-muyiwa/shared-service";
+import {CustomError, sendErrorResponse, sendSuccessResponse} from "@dev-muyiwa/shared-service";
 import {TweetDocument, TweetModel} from "../models/tweet.model";
 import axios, {AxiosResponse} from "axios";
 import {BookmarkDocument, BookmarkModel} from "../models/bookmark.model";
 import mongoose from "mongoose";
 
+
+
+
 class TweetController {
     // For every authenticated tweet, check if the user exists to get their ID.
     async createTweet(req: Request, res: Response) {
         try {
-            let {parentId, content} = req.body;
+            let {parentId, content, isDraft} = req.body;
             // Add media
             const response: AxiosResponse = await axios.get("http://account:3001/users/me", {
                 validateStatus: null,
@@ -27,10 +30,11 @@ class TweetController {
             const tweet: TweetDocument = await TweetModel.create({
                 parent: quotedTweet?.id,
                 author: id,
-                content: content
+                content: content,
+                isDraft: isDraft == "true"
             });
 
-            if (quotedTweet) {
+            if (quotedTweet && !tweet.isDraft) {
                 quotedTweet.stats.quotes += 1;
                 await quotedTweet.save();
             }
@@ -87,12 +91,28 @@ class TweetController {
     async getTweet(req: Request, res: Response) {
         try {
             const {tweetId} = req.params;
+
+            const response: AxiosResponse = await axios.get("http://account:3001/users/me", {
+                validateStatus: null,
+                headers: {
+                    "Authorization": `${req.headers.authorization}`
+                }
+            });
+            if (response.status !== 200) {
+                throw new CustomError(response.data.message, response.status);
+            }
+
+            const {id} = response.data.data;
+
             const tweet: TweetDocument | null = await TweetModel.findById(tweetId);
             if (!tweet) {
                 throw new CustomError("Tweet does not exist");
             }
 
-            // Increment the view count if the viewer is unique
+            if (!tweet.author.equals(id)) {
+                tweet.stats.views += 1;
+                await tweet.save();
+            }
 
             return sendSuccessResponse(res, tweet, "Tweet fetched");
         } catch (err) {

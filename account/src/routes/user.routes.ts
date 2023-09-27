@@ -6,24 +6,24 @@ import {authorizeToken, verifyResourceAuthor} from "../middleware/authorization"
 const userRouter: Router = express.Router();
 const userController: UserController = new UserController();
 
+userRouter.post("/:userId/token", userController.generateAccessToken);
+
+
 userRouter.use(checkAuthorizationToken, authorizeToken);
 
-
 userRouter.get("/:userId", userController.getUser);
+userRouter.put("/me", userController.updateUser);
+userRouter.patch("/me", userController.updatePassword);
 
-// Create a middleware that compares the id
-userRouter.put("/:userId", verifyResourceAuthor, userController.updateUser);
-userRouter.patch("/:userId", verifyResourceAuthor, userController.updatePassword);
+userRouter.get("/:userId/tweets", userController.getTweets);
+// userRouter.get("/:userId/drafts", verifyResourceAuthor, userController.getDrafts);
+userRouter.get("/me/drafts", userController.getDrafts);
+userRouter.get("/me/bookmarks", userController.getBookmarks);
 
 userRouter.get("/:userId/followers", userController.getFollowers);
 userRouter.get("/:userId/followings", userController.getFollowings);
-
 userRouter.post("/:userId/follow", userController.followHandle);
 userRouter.post("/:userId/unfollow", userController.unfollowHandle);
-
-userRouter.get("/:userId/tweets", userController.getTweets);
-userRouter.get("/:userId/drafts", verifyResourceAuthor, userController.getDrafts);
-userRouter.get("/:userId/bookmarks", verifyResourceAuthor, userController.getBookmarks);
 
 
 export default userRouter;

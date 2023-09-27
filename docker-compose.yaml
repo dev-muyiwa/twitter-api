@@ -85,7 +85,7 @@ services:
     depends_on:
       - gateway
       - kafka
-      - followings-db
+#      - followings-db
     env_file:
       - followings/.env
     volumes:
@@ -112,44 +112,45 @@ services:
       - api-network
 
 
-  user-db:
-    image: mongodb/mongodb-community-server:6.0.4-ubi8
-    container_name: user-db
-    environment:
-      MONGODB_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
-      MONGODB_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-    ports:
-      - "27018:27017"
-    volumes:
-      - mongodb-user:/data/db
-    networks:
-      - api-network
-
-  followings-db:
-    image: mongodb/mongodb-community-server:6.0.4-ubi8
-    container_name: followings-db
-    environment:
-      MONGODB_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
-      MONGODB_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-    ports:
-      - "27019:27017"
-    volumes:
-      - mongodb-followings:/data/db
-    networks:
-      - api-network
-
-  tweets-db:
-    image: mongodb/mongodb-community-server:6.0.4-ubi8
-    container_name: tweets-db
-    environment:
-      MONGODB_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
-      MONGODB_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-    ports:
-      - "27020:27017"
-    volumes:
-      - mongodb-tweets:/data/db
-    networks:
-      - api-network
+# Use one server that would act as a cluster to hold all the databases
+#  user-db:
+#    image: mongodb/mongodb-community-server:6.0.4-ubi8
+#    container_name: user-db
+#    environment:
+#      MONGODB_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+#      MONGODB_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+#    ports:
+#      - "27018:27017"
+#    volumes:
+#      - mongodb-user:/data/db
+#    networks:
+#      - api-network
+#
+#  followings-db:
+#    image: mongodb/mongodb-community-server:6.0.4-ubi8
+#    container_name: followings-db
+#    environment:
+#      MONGODB_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+#      MONGODB_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+#    ports:
+#      - "27019:27017"
+#    volumes:
+#      - mongodb-followings:/data/db
+#    networks:
+#      - api-network
+#
+#  tweets-db:
+#    image: mongodb/mongodb-community-server:6.0.4-ubi8
+#    container_name: tweets-db
+#    environment:
+#      MONGODB_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+#      MONGODB_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+#    ports:
+#      - "27020:27017"
+#    volumes:
+#      - mongodb-tweets:/data/db
+#    networks:
+#      - api-network
 
 volumes:
   mongodb-user:

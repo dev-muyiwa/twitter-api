@@ -1,6 +1,12 @@
 import mongoose, {Document, Model, Schema, Types} from "mongoose";
 
+enum Media {
+    IMAGE = "image",
+    VIDEO = "video"
+}
+
 type MediaDocument = Document & {
+    type: string,
     publicId: string,
     url: string
 }
@@ -21,6 +27,11 @@ type TweetDocument = Document & {
 }
 
 const MediaSchema: Schema<MediaDocument> = new Schema<MediaDocument>({
+    type: {
+        type: String,
+        enum: Media,
+        required: true
+    },
     publicId: {
         type: String,
         required: true

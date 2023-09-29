@@ -20,7 +20,7 @@ export const config = {
         jwt_activation_secret: process.env.ACTIVATION_TOKEN_SECRET || "activation secret",
         jwt_reset_secret: process.env.RESET_TOKEN_SECRET || "password reset",
     },
-
+    redis: process.env.REDIS_URL
 }
 
 setupEnv(config.server.jwt_access_secret);

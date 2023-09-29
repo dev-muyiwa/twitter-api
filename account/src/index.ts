@@ -2,12 +2,27 @@ import {databaseSetup} from "./config/database";
 import {config} from "./config/config";
 import app from "./config/app";
 import {KafkaService} from "@dev-muyiwa/shared-service";
+import {createClient} from "redis";
+import {promisify} from "util";
 
 
 const port: number = config.server.port;
 const kafka: KafkaService = new KafkaService(["kafka:9093"], "user-service");
 const kafkaProducer = kafka.Producer;
 const kafkaConsumer = kafka.Consumer;
+
+let redisGet: (key: string) => Promise<string | null>;
+let redisSet: (key: string, seconds: number, value: string) => Promise<string>;
+
+const redisClient = createClient({
+    url: config.redis,
+})
+
+redisClient.connect().then((value) => {
+    console.log("Redis connection successful...")
+    redisGet = promisify(value.get).bind(redisClient);
+    redisSet = promisify(value.setEx).bind(redisClient);
+});
 
 databaseSetup().then(() => {
     console.log("Database connection successful...");
@@ -34,4 +49,4 @@ process.on('SIGINT', async () => {
 });
 
 
-export {kafkaProducer, kafkaConsumer};
+export {kafkaProducer, kafkaConsumer, redisGet, redisSet, redisClient};

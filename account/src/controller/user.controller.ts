@@ -1,19 +1,30 @@
 import {Request, Response} from "express";
 import {AuthenticatedRequest, CustomError, sendErrorResponse, sendSuccessResponse} from "@dev-muyiwa/shared-service";
 import {UserDocument, UserModel} from "../model/user.model";
-import {findUser, findUserBy} from "../service/user.service";
+import {findUserBy} from "../service/user.service";
 import bcrypt from "bcrypt";
 import axios, {AxiosResponse} from "axios"
 import {config} from "../config/config";
 import jwt, {JwtPayload} from "jsonwebtoken";
+import {redisGet, redisSet} from "../index";
 
 class UserController {
     async getUser(req: AuthenticatedRequest, res: Response): Promise<Response> {
         try {
             const {userId} = req.params;
             const id = (userId == "me") ? req.userId : userId;
-            const user: UserDocument = await findUserBy(id);
-            // axios.defaults.timeout = 10_000;
+            console.log("Checkpoint D")
+
+            const cachedAuthUser = await redisGet(`user:${id}`);
+            console.log("Checkpoint E:", cachedAuthUser)
+
+
+            const user: UserDocument = cachedAuthUser ? JSON.parse(cachedAuthUser) : await findUserBy(id);
+            // const user: UserDocument =  JSON.parse(cachedAuthUser);
+            if (cachedAuthUser) {
+                console.log("User from the redis cache")
+            }
+            // const user: UserDocument = await findUserBy(id);
 
             let data: {} = {};
             if (user.id !== req.userId) {
@@ -22,6 +33,8 @@ class UserController {
                 });
                 data = response.data.data;
             }
+
+            // await redisSet(`user:${user.id}`, 7200, JSON.stringify(user.getDetailedInfo()));
 
             return sendSuccessResponse(res, {...user.getDetailedInfo(), ...data}, "User fetched")
         } catch (err) {

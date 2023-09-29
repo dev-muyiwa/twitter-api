@@ -11,7 +11,7 @@ class TweetController {
     async createTweet(req: Request, res: Response) {
         try {
             let {parentId, content, isDraft} = req.body;
-            const medias: Express.Multer.File[] | undefined = req.files as Express.Multer.File[];
+            // const medias: Express.Multer.File[] | undefined = req.files as Express.Multer.File[];
 
             const response: AxiosResponse = await axios.get("http://account:3001/users/me", {
                 validateStatus: null,
@@ -26,19 +26,19 @@ class TweetController {
             const {id} = response.data.data;
             const quotedTweet: TweetDocument | null = await TweetModel.findById(parentId);
 
-            if (medias) {
-                if (medias.length > 4) {
-                    throw new CustomError("A maximum of 4 images/videos are allowed", CustomError.BAD_REQUEST);
-                }
-
-                medias.forEach(media => {
-                    if (!media || (!media.mimetype.startsWith("image/") && !media.mimetype.startsWith("video/"))) {
-                        throw new CustomError("Only images and videos are supported", CustomError.BAD_REQUEST);
-                    }
-                });
-
-
-            }
+            // if (medias) {
+            //     if (medias.length > 4) {
+            //         throw new CustomError("A maximum of 4 images/videos are allowed", CustomError.BAD_REQUEST);
+            //     }
+            //
+            //     medias.forEach(media => {
+            //         if (!media || (!media.mimetype.startsWith("image/") && !media.mimetype.startsWith("video/"))) {
+            //             throw new CustomError("Only images and videos are supported", CustomError.BAD_REQUEST);
+            //         }
+            //     });
+            //
+            //
+            // }
 
 
             // Upload to cloudinary

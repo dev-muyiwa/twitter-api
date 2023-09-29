@@ -6,24 +6,19 @@ import bcrypt from "bcrypt";
 import axios, {AxiosResponse} from "axios"
 import {config} from "../config/config";
 import jwt, {JwtPayload} from "jsonwebtoken";
-import {redisGet, redisSet} from "../index";
+import {redisClient, redisGet, redisSet} from "../index";
 
 class UserController {
     async getUser(req: AuthenticatedRequest, res: Response): Promise<Response> {
         try {
             const {userId} = req.params;
             const id = (userId == "me") ? req.userId : userId;
-            console.log("Checkpoint D")
 
-            const cachedAuthUser = await redisGet(`user:${id}`);
-            console.log("Checkpoint E:", cachedAuthUser)
+            const cachedAuthUser = await redisClient.get(`user:${id}`)
 
 
-            const user: UserDocument = cachedAuthUser ? JSON.parse(cachedAuthUser) : await findUserBy(id);
+            const user: UserDocument = cachedAuthUser ? UserModel.castObject(JSON.parse(cachedAuthUser)) as UserDocument : await findUserBy(id);
             // const user: UserDocument =  JSON.parse(cachedAuthUser);
-            if (cachedAuthUser) {
-                console.log("User from the redis cache")
-            }
             // const user: UserDocument = await findUserBy(id);
 
             let data: {} = {};
@@ -34,7 +29,7 @@ class UserController {
                 data = response.data.data;
             }
 
-            // await redisSet(`user:${user.id}`, 7200, JSON.stringify(user.getDetailedInfo()));
+            // await redisClient.setEx(`user:${user.id}`, 7200, JSON.stringify(user));
 
             return sendSuccessResponse(res, {...user.getDetailedInfo(), ...data}, "User fetched")
         } catch (err) {

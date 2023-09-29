@@ -2,7 +2,7 @@ import {Response, NextFunction} from "express";
 import {AuthenticatedRequest, CustomError, sendErrorResponse} from "@dev-muyiwa/shared-service";
 import {UserDocument} from "../model/user.model";
 import {findUserBy} from "../service/user.service";
-import {redisGet, redisSet} from "../index";
+import {redisClient, redisGet, redisSet} from "../index";
 
 const authorizeToken = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<Response | void> => {
     try {
@@ -21,6 +21,7 @@ const authorizeToken = async (req: AuthenticatedRequest, res: Response, next: Ne
         }
 
         // store to redis
+        await redisClient.setEx(`user:${user.id}`, 7200, JSON.stringify(user));
         // await redisSet(`user:${user.id}g`, 7200, JSON.stringify(user.getDetailedInfo()));
         console.log("Checkpoint C")
 

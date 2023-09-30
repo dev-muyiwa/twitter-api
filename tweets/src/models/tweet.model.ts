@@ -1,4 +1,5 @@
 import mongoose, {Document, Model, Schema, Types} from "mongoose";
+import paginate from 'mongoose-paginate-v2';
 
 enum Media {
     IMAGE = "image",
@@ -86,7 +87,9 @@ const TweetSchema: Schema<TweetDocument> = new Schema<TweetDocument>({
     }
 }, {timestamps: true})
 
-const TweetModel: Model<TweetDocument> = mongoose.model("Tweet", TweetSchema);
+TweetSchema.plugin(paginate);
+
+const TweetModel = mongoose.model<TweetDocument, mongoose.PaginateModel<TweetDocument>>("Tweet", TweetSchema);
 
 export {
     TweetDocument, TweetModel

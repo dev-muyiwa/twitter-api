@@ -7,7 +7,6 @@ import mongoose from "mongoose";
 
 
 class TweetController {
-    // For every authenticated tweet, check if the user exists to get their ID.
     async createTweet(req: Request, res: Response) {
         try {
             let {parentId, content, isDraft} = req.body;
@@ -66,8 +65,33 @@ class TweetController {
     async getTweets(req: Request, res: Response) {
         try {
             const {userId} = req.params;
+            let {page} = req.query
+            // if (Number(page)) {
+            //     page = Number(page)
+            // }
+            const p: number = (Number(page)) ? Number(page) : 1;
 
-            const tweets: TweetDocument[] = await TweetModel.find({author: userId, isDraft: false});
+
+            // const tweets: TweetDocument[] = await TweetModel.find({author: userId, isDraft: false});
+            const tweets = await TweetModel.paginate({author: userId, isDraft: false}, {
+                page: p,
+                limit: 15,
+                customLabels: {
+                    limit: 'perPage',
+                    page: 'currentPage',
+                    docs: 'tweets',
+                    nextPage: 'next',
+                    prevPage: 'prev',
+                    totalPages: 'totalPages',
+                    totalDocs: false,
+                    pagingCounter: false,
+                    meta: false,
+                    hasNextPage: false,
+                    hasPrevPage: false
+                },
+                sort: "-createdAt",
+                populate: "parent"
+            });
             // Paginate the tweets
 
             return sendSuccessResponse(res, tweets, "Tweets fetched");

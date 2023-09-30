@@ -6,7 +6,7 @@ import bcrypt from "bcrypt";
 import axios, {AxiosResponse} from "axios"
 import {config} from "../config/config";
 import jwt, {JwtPayload} from "jsonwebtoken";
-import {redisClient, redisGet, redisSet} from "../index";
+import {redisClient} from "../index";
 
 class UserController {
     async getUser(req: AuthenticatedRequest, res: Response): Promise<Response> {
@@ -14,22 +14,21 @@ class UserController {
             const {userId} = req.params;
             const id = (userId == "me") ? req.userId : userId;
 
-            const cachedAuthUser = await redisClient.get(`user:${id}`)
-
-
-            const user: UserDocument = cachedAuthUser ? UserModel.castObject(JSON.parse(cachedAuthUser)) as UserDocument : await findUserBy(id);
-            // const user: UserDocument =  JSON.parse(cachedAuthUser);
-            // const user: UserDocument = await findUserBy(id);
+            const user: UserDocument = await findUserBy(id);
 
             let data: {} = {};
             if (user.id !== req.userId) {
-                const response: AxiosResponse = await axios.post(`http://followings:3003/${user.id}/following-status`, {followerId: req.userId}, {
-                    validateStatus: null
-                });
-                data = response.data.data;
+                const stats: string | null = await redisClient.get(`followingStats:${user.id}`);
+                if (!stats) {
+                    const response: AxiosResponse = await axios.post(`http://followings:3003/${user.id}/following-status`, {followerId: req.userId}, {
+                        validateStatus: null
+                    });
+                    data = response.data.data;
+                    await redisClient.setEx(`followingStats:${user.id}`, 7200, JSON.stringify(response.data.data))
+                } else {
+                    data = JSON.parse(stats);
+                }
             }
-
-            // await redisClient.setEx(`user:${user.id}`, 7200, JSON.stringify(user));
 
             return sendSuccessResponse(res, {...user.getDetailedInfo(), ...data}, "User fetched")
         } catch (err) {

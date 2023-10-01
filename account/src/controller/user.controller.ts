@@ -188,8 +188,9 @@ class UserController {
     async getTweets(req: AuthenticatedRequest, res: Response) {
         try {
             const {userId} = req.params;
+            const {page} = req.query;
             const user: UserDocument = await findUserBy(userId);
-            const response: AxiosResponse = await axios.get(`http://tweets:3004/${user.id}/tweets`, {
+            const response: AxiosResponse = await axios.get(`http://tweets:3004/${user.id}/tweets?page=${page}`, {
                 validateStatus: null,
             });
             if (response.status !== 200) {

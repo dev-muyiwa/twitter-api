@@ -205,9 +205,10 @@ class UserController {
 
     async getDrafts(req: AuthenticatedRequest, res: Response) {
         try {
+            const {page} = req.query;
             const user: UserDocument = await findUserBy(req.userId);
 
-            const response: AxiosResponse = await axios.get(`http://tweets:3004/${user.id}/drafts`, {
+            const response: AxiosResponse = await axios.get(`http://tweets:3004/${user.id}/drafts?page=${page}`, {
                 validateStatus: null,
                 headers: {
                     "Authorization": `${req.headers.authorization}`

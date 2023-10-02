@@ -1,26 +1,52 @@
 _format_version: "3.0"
 
+#services:
+#  - name: account-service
+#    url: http://account:3001/auth
+#    routes:
+#      - name: auth-routes
+#        paths:
+#          - /auth
+#
+#  - name: user-service
+#    url: http://account:3001/users
+#    routes:
+#      - name: user-routes
+#        paths:
+#          - /users
+#
+#  - name: tweet-service
+#    url: http://tweets:3004
+#    routes:
+#      - name: tweets
+#        paths:
+#          - /tweets
+
 services:
-  - name: auth-service
+  - name: account-service
     url: http://account:3001/auth
-    routes:
-      - name: auth-routes
-        paths:
-          - /auth
 
   - name: user-service
     url: http://account:3001/users
-    routes:
-      - name: user-routes
-        paths:
-          - /users
 
   - name: tweet-service
     url: http://tweets:3004
-    routes:
-      - name: tweets
-        paths:
-          - /tweets
+
+routes:
+  - name: authentication
+    paths:
+      - /auth
+    service: account-service
+
+  - name: users
+    paths:
+      - /users
+    service: user-service
+
+  - name: tweets
+    paths:
+      - /tweets
+    service: tweet-service
 
 
 plugins:

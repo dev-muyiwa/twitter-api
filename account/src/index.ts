@@ -2,7 +2,7 @@ import {databaseSetup} from "./config/database";
 import {config} from "./config/config";
 import app from "./config/app";
 import {KafkaService} from "@dev-muyiwa/shared-service";
-import {createClient} from "redis";
+import {createClient, RedisClientType, SocketClosedUnexpectedlyError} from "redis";
 
 
 const port: number = config.server.port;
@@ -11,13 +11,27 @@ const kafkaProducer = kafka.Producer;
 const kafkaConsumer = kafka.Consumer;
 
 
-const redisClient = createClient({
-    url: config.redis,
-})
+let redisClient: RedisClientType;
 
-redisClient.connect().then((value) => {
-    console.log("Redis connection successful...")
-});
+(async () => {
+    redisClient = createClient({
+        url: config.redis,
+    });
+
+    redisClient.on("error", async (err) => {
+        console.error(`Error connecting to Redis: ${err}`)
+        if (err instanceof SocketClosedUnexpectedlyError) {
+            console.log("Reconnecting in 15s...");
+            new Promise((resolve) => setTimeout(resolve, 15_000));
+            console.log("Reconnecting...");
+            await redisClient.connect();
+            console.log("Redis connection successful")
+        }
+    });
+
+    await redisClient.connect();
+    console.log("Redis connection successful")
+})();
 
 databaseSetup().then(() => {
     console.log("Database connection successful...");
@@ -39,7 +53,7 @@ databaseSetup().then(() => {
 })
 
 process.on('SIGINT', async () => {
-    await Promise.all([kafkaProducer.disconnect(), kafkaConsumer.disconnect()]);
+    await Promise.all([kafkaProducer.disconnect(), kafkaConsumer.disconnect(), redisClient.disconnect()]);
     process.exit();
 });
 

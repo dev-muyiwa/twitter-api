@@ -1,6 +1,6 @@
 import {Response, NextFunction} from "express";
 import {AuthenticatedRequest, CustomError, sendErrorResponse} from "@dev-muyiwa/shared-service";
-import {UserDocument, UserModel} from "../model/user.model";
+import {UserDocument} from "../model/user.model";
 import {findUserBy} from "../service/user.service";
 
 const authorizeToken = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<Response | void> => {

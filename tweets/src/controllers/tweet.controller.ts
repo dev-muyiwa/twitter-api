@@ -65,19 +65,26 @@ class TweetController {
     async getTweets(req: Request, res: Response) {
         try {
             const {userId} = req.params;
-            let {page} = req.query
-            // if (Number(page)) {
-            //     page = Number(page)
-            // }
+
+            const response: AxiosResponse = await axios.get("http://account:3001/users/me", {
+                validateStatus: null,
+                headers: {
+                    "Authorization": `${req.headers.authorization}`
+                }
+            });
+            if (response.status !== 200) {
+                throw new CustomError(response.data.message, response.status);
+            }
+
+            const {id} = response.data.data;
+            const {page} = req.query
             const p: number = (Number(page)) ? Number(page) : 1;
 
-
-            // const tweets: TweetDocument[] = await TweetModel.find({author: userId, isDraft: false});
-            const tweets = await TweetModel.paginate({author: userId, isDraft: false}, {
+            const tweets = await TweetModel.paginate({author: id, isDraft: false}, {
                 page: p,
                 limit: 15,
                 customLabels: {
-                    limit: 'perPage',
+                    limit: false,
                     page: 'currentPage',
                     docs: 'tweets',
                     nextPage: 'next',
@@ -92,7 +99,6 @@ class TweetController {
                 sort: "-createdAt",
                 populate: "parent"
             });
-            // Paginate the tweets
 
             return sendSuccessResponse(res, tweets, "Tweets fetched");
         } catch (err) {
@@ -120,7 +126,28 @@ class TweetController {
                 throw new CustomError("Unable to access this resource", CustomError.FORBIDDEN);
             }
 
-            const drafts: TweetDocument[] = await TweetModel.find({_id: userId, isDraft: true});
+            const {page} = req.query;
+            const p: number = (Number(page)) ? Number(page) : 1;
+
+            const drafts = await TweetModel.paginate({author: id, isDraft: true}, {
+                page: p,
+                limit: 15,
+                customLabels: {
+                    limit: false,
+                    page: 'currentPage',
+                    docs: 'tweets',
+                    nextPage: 'next',
+                    prevPage: 'prev',
+                    totalPages: 'totalPages',
+                    totalDocs: false,
+                    pagingCounter: false,
+                    meta: false,
+                    hasNextPage: false,
+                    hasPrevPage: false
+                },
+                sort: "-createdAt",
+                populate: "parent"
+            });
 
             return sendSuccessResponse(res, drafts, "Drafts fetched");
         } catch (err) {

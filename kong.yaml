@@ -30,7 +30,7 @@ services:
     url: http://account:3001/users
 
   - name: tweet-service
-    url: http://tweets:3004
+    url: http://tweets:3004/users
 
 routes:
   - name: authentication
@@ -45,7 +45,7 @@ routes:
 
   - name: tweets
     paths:
-      - /tweets
+      - /status
     service: tweet-service
 
 

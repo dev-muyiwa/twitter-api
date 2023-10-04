@@ -76,11 +76,10 @@ class TweetController {
                 throw new CustomError(response.data.message, response.status);
             }
 
-            const {id} = response.data.data;
             const {page} = req.query
             const p: number = (Number(page)) ? Number(page) : 1;
 
-            const tweets = await TweetModel.paginate({author: id, isDraft: false}, {
+            const tweets = await TweetModel.paginate({author: userId, isDraft: false}, {
                 page: p,
                 limit: 15,
                 customLabels: {
@@ -108,7 +107,6 @@ class TweetController {
 
     async getDrafts(req: Request, res: Response) {
         try {
-            const {userId} = req.params;
 
             const response: AxiosResponse = await axios.get("http://account:3001/users/me", {
                 validateStatus: null,
@@ -121,10 +119,6 @@ class TweetController {
             }
 
             const {id} = response.data.data;
-
-            if (userId !== id) {
-                throw new CustomError("Unable to access this resource", CustomError.FORBIDDEN);
-            }
 
             const {page} = req.query;
             const p: number = (Number(page)) ? Number(page) : 1;
@@ -280,7 +274,6 @@ class TweetController {
 
     async getBookmarks(req: Request, res: Response) {
         try {
-            const {userId} = req.params;
             const response: AxiosResponse = await axios.get("http://account:3001/users/me", {
                 validateStatus: null,
                 headers: {
@@ -292,9 +285,6 @@ class TweetController {
             }
 
             const {id} = response.data.data;
-            if (id !== userId) {
-                throw new CustomError("Unable to access this resource", CustomError.FORBIDDEN);
-            }
 
             const bookmarks: BookmarkDocument[] = await BookmarkModel.find({user: id});
 

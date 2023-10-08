@@ -22,6 +22,10 @@ _format_version: "3.0"
 #        paths:
 #          - /tweets
 
+
+# What if I made each service have a prefix of each letter of the alphabet?
+
+
 services:
   - name: account-service
     url: http://account:3001/auth

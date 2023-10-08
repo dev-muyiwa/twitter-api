@@ -184,67 +184,6 @@ class UserController {
             return sendErrorResponse(res, err);
         }
     }
-
-    async getTweets(req: AuthenticatedRequest, res: Response) {
-        try {
-            const {userId} = req.params;
-            const {page} = req.query;
-            const user: UserDocument = await findUserBy(userId);
-            const response: AxiosResponse = await axios.get(`http://tweets:3004/${user.id}/tweets?page=${page}`, {
-                validateStatus: null,
-            });
-            if (response.status !== 200) {
-                throw new CustomError(response.data.message, response.status);
-            } else {
-                return sendSuccessResponse(res, response.data.data, response.data.message, response.status);
-            }
-        } catch (err) {
-            return sendErrorResponse(res, err);
-        }
-    }
-
-    async getDrafts(req: AuthenticatedRequest, res: Response) {
-        try {
-            const {page} = req.query;
-            const user: UserDocument = await findUserBy(req.userId);
-
-            const response: AxiosResponse = await axios.get(`http://tweets:3004/${user.id}/drafts?page=${page}`, {
-                validateStatus: null,
-                headers: {
-                    "Authorization": `${req.headers.authorization}`
-                }
-            });
-
-            if (response.status !== 200) {
-                throw new CustomError(response.data.message, response.status);
-            }
-
-            return sendSuccessResponse(res, response.data.data, response.data.message);
-        } catch (err) {
-            return sendErrorResponse(res, err);
-        }
-    }
-
-    async getBookmarks(req: AuthenticatedRequest, res: Response) {
-        try {
-            const user: UserDocument = await findUserBy(req.userId);
-
-            const response: AxiosResponse = await axios.get(`http://tweets:3004/${user.id}/bookmarks`, {
-                validateStatus: null,
-                headers: {
-                    "Authorization": `${req.headers.authorization}`
-                }
-            });
-
-            if (response.status !== 200) {
-                throw new CustomError(response.data.message, response.status);
-            }
-
-            return sendSuccessResponse(res, response.data.data, response.data.message);
-        } catch (err) {
-            return sendErrorResponse(res, err);
-        }
-    }
 }
 
 export default UserController;

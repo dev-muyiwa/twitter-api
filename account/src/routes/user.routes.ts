@@ -15,12 +15,6 @@ userRouter.get("/:userId", userController.getUser);
 userRouter.put("/me", userController.updateUser);
 userRouter.patch("/me", userController.updatePassword);
 
-// Move to Tweet Service
-// userRouter.get("/:userId/tweets", userController.getTweets);
-// userRouter.get("/:userId/drafts", verifyResourceAuthor, userController.getDrafts);
-// userRouter.get("/me/drafts", userController.getDrafts);
-// userRouter.get("/me/bookmarks", userController.getBookmarks);
-
 // Move to Followings service
 userRouter.get("/:userId/followers", userController.getFollowers);
 userRouter.get("/:userId/followings", userController.getFollowings);

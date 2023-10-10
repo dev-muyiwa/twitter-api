@@ -12,9 +12,8 @@ tweetRouter.get("/me/drafts",tweetController.getDrafts);
 tweetRouter.get("/me/bookmarks", tweetController.getBookmarks);
 
 tweetRouter.get("/:tweetId", tweetController.getTweet);
-
-
 tweetRouter.delete("/:tweetId", tweetController.deleteTweet);
+
 tweetRouter.post("/:tweetId/bookmark", tweetController.addTweetToBookmarks);
 tweetRouter.delete("/:tweetId/bookmark", tweetController.removeTweetFromBookmarks);
 

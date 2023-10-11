@@ -8,8 +8,6 @@ COPY package.json .
 
 RUN npm install
 
-RUN npm install
-
 COPY . .
 
 EXPOSE 3004

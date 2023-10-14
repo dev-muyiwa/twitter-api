@@ -8,7 +8,8 @@ type FollowingDocument = Document & {
 const FollowingSchema: Schema<FollowingDocument> = new Schema<FollowingDocument>({
     user: {
         type: Schema.Types.ObjectId,
-        required: true
+        required: true,
+        index: true
     },
     following: {
         type: Schema.Types.ObjectId,

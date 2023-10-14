@@ -39,7 +39,8 @@ const UserSchema: Schema<UserDocument> = new Schema<UserDocument>({
     lastName: String,
     handle: {
         type: String,
-        required: true
+        required: true,
+        index: true
     },
     displayName: String,
     email: String,

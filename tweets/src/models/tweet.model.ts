@@ -46,7 +46,8 @@ const MediaSchema: Schema<MediaDocument> = new Schema<MediaDocument>({
 const TweetSchema: Schema<TweetDocument> = new Schema<TweetDocument>({
     author: {
         type: Schema.Types.ObjectId,
-        required: true
+        required: true,
+        index: true
     },
     parent: {
         type: Schema.Types.ObjectId,

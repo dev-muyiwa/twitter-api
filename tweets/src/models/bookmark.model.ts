@@ -9,7 +9,8 @@ const BookmarkSchema: Schema<BookmarkDocument> = new Schema<BookmarkDocument>({
     user: {
         type: Schema.Types.ObjectId,
         required: true,
-        unique: true
+        unique: true,
+        index: true
     },
     tweets: [{
         type: Schema.Types.ObjectId,

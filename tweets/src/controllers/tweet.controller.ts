@@ -95,7 +95,7 @@ class TweetController {
                     hasNextPage: false,
                     hasPrevPage: false
                 },
-                sort: "-createdAt",
+                sort: "-timestamp",
                 populate: "parent"
             });
 
@@ -139,7 +139,7 @@ class TweetController {
                     hasNextPage: false,
                     hasPrevPage: false
                 },
-                sort: "-createdAt",
+                sort: "-timestamp",
                 populate: "parent"
             });
 

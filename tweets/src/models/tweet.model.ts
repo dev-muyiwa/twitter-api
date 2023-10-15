@@ -24,7 +24,8 @@ type TweetDocument = Document & {
         quotes: number;
         comments: number;
     }
-    isDraft?: boolean
+    isDraft?: boolean,
+    timestamp?: number
 }
 
 const MediaSchema: Schema<MediaDocument> = new Schema<MediaDocument>({
@@ -85,8 +86,12 @@ const TweetSchema: Schema<TweetDocument> = new Schema<TweetDocument>({
     isDraft: {
         type: Boolean,
         default: false
+    },
+    timestamp: {
+        type: Date,
+        default: Date.now()
     }
-}, {timestamps: true})
+})
 
 TweetSchema.plugin(paginate);
 

@@ -1,8 +1,10 @@
 import mongoose, {Document, Model, Schema, Types} from "mongoose";
+import paginate from "mongoose-paginate-v2";
 
 type BookmarkDocument = Document & {
     user: Types.ObjectId,
-    tweets: Types.ObjectId[]
+    tweet: Types.ObjectId,
+    timestamp?: string
 }
 
 const BookmarkSchema: Schema<BookmarkDocument> = new Schema<BookmarkDocument>({
@@ -12,13 +14,20 @@ const BookmarkSchema: Schema<BookmarkDocument> = new Schema<BookmarkDocument>({
         unique: true,
         index: true
     },
-    tweets: [{
+    tweet: {
         type: Schema.Types.ObjectId,
         ref: "Tweet",
-    }]
-}, {timestamps: true});
+        required: true
+    },
+    timestamp: {
+        type: Date,
+        default: Date.now()
+    }
+});
 
-const BookmarkModel: Model<BookmarkDocument> = mongoose.model("Bookmark", BookmarkSchema);
+BookmarkSchema.plugin(paginate);
+
+const BookmarkModel = mongoose.model<BookmarkDocument, mongoose.PaginateModel<BookmarkDocument>>("Bookmark", BookmarkSchema);
 
 export {
     BookmarkModel, BookmarkDocument

@@ -221,19 +221,24 @@ class TweetController {
 
             const {id} = response.data.data;
 
-            let bookmark: BookmarkDocument | null = await BookmarkModel.findOne({user: id});
-            if (!bookmark) {
-                bookmark = await BookmarkModel.create({user: id});
+            const tweet: TweetDocument | null = await TweetModel.findById(tweetId);
+
+            if (!tweet) {
+                throw new CustomError("Tweet does not exist", CustomError.NOT_FOUND);
             }
 
-            if (!bookmark.tweets.includes(new mongoose.Types.ObjectId(tweetId))) {
-                await bookmark.updateOne({
-                    $push: {tweets: tweetId}
-                });
+            let bookmark: BookmarkDocument | null = await BookmarkModel.findOne({user: id, tweet: tweet.id});
+            if (!bookmark) {
+                await BookmarkModel.create({
+                    user: id,
+                    tweet: tweetId
+                })
+
                 return sendSuccessResponse(res, null, "Tweet added to bookmarks", 201);
             } else {
                 return sendSuccessResponse(res, null, "Tweet is already in bookmarks", 200);
             }
+
         } catch (err) {
             return sendErrorResponse(res, err);
         }
@@ -254,19 +259,18 @@ class TweetController {
 
             const {id} = response.data.data;
 
-            let bookmark: BookmarkDocument | null = await BookmarkModel.findOne({user: id});
-            if (!bookmark) {
-                bookmark = await BookmarkModel.create({user: id});
+            const tweet: TweetDocument | null = await TweetModel.findById(tweetId);
+
+            if (!tweet) {
+                throw new CustomError("Tweet does not exist", CustomError.NOT_FOUND);
             }
 
-            if (!bookmark.tweets.includes(new mongoose.Types.ObjectId(tweetId))) {
-                return sendSuccessResponse(res, null, "Tweet is not in bookmarks", 200);
-            } else {
-                await bookmark.updateOne({
-                    $pull: {tweets: tweetId}
-                });
-                return sendSuccessResponse(res, null, "Tweet removed from bookmarks", 200);
+            const bookmark: BookmarkDocument | null = await BookmarkModel.findOneAndDelete({user: id, tweet: tweet.id});
+            if (!bookmark) {
+                throw new CustomError("Tweet isn't bookmarked");
             }
+
+            return sendSuccessResponse(res, null, "Tweet removed from bookmarks", 200);
         } catch (err) {
             return sendErrorResponse(res, err);
         }
@@ -285,8 +289,28 @@ class TweetController {
             }
 
             const {id} = response.data.data;
+            const {page} = req.query;
+            const p: number = (Number(page)) ? Number(page) : 1;
 
-            const bookmarks: BookmarkDocument[] = await BookmarkModel.find({user: id});
+            const bookmarks = await BookmarkModel.paginate({user: id}, {
+                page: p,
+                limit: 15,
+                customLabels: {
+                    limit: false,
+                    page: 'currentPage',
+                    docs: 'tweets',
+                    nextPage: 'next',
+                    prevPage: 'prev',
+                    totalPages: 'totalPages',
+                    totalDocs: false,
+                    pagingCounter: false,
+                    meta: false,
+                    hasNextPage: false,
+                    hasPrevPage: false
+                },
+                sort: "-timestamp",
+                populate: "parent"
+            });
 
             return sendSuccessResponse(res, bookmarks, "Bookmarks fetched");
         } catch (err) {

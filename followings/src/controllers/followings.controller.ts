@@ -28,8 +28,29 @@ class FollowingsController {
 
     async getFollowers(req: Request, res: Response) {
         try {
+            const {page} = req.query;
+            const p: number = (Number(page)) ? Number(page) : 1;
+
             const {userId} = req.params;
-            const followers: FollowingDocument[] = await FollowingModel.find({following: userId});
+
+            const followers = await FollowingModel.paginate({following: userId}, {
+                page: p,
+                limit: 15,
+                customLabels: {
+                    limit: false,
+                    page: 'currentPage',
+                    docs: 'followers',
+                    nextPage: 'next',
+                    prevPage: 'prev',
+                    totalPages: 'totalPages',
+                    totalDocs: false,
+                    pagingCounter: false,
+                    meta: false,
+                    hasNextPage: false,
+                    hasPrevPage: false
+                },
+                sort: "-timestamp",
+            });
 
             return sendSuccessResponse(res, followers, "Followers fetched");
         } catch (err) {
@@ -39,8 +60,28 @@ class FollowingsController {
 
     async getFollowings(req: Request, res: Response) {
         try {
+            const {page} = req.query;
+            const p: number = (Number(page)) ? Number(page) : 1;
+
             const {userId} = req.params;
-            const followings: FollowingDocument[] = await FollowingModel.find({user: userId});
+            const followings = await FollowingModel.paginate({user: userId}, {
+                page: p,
+                limit: 15,
+                customLabels: {
+                    limit: false,
+                    page: 'currentPage',
+                    docs: 'followings',
+                    nextPage: 'next',
+                    prevPage: 'prev',
+                    totalPages: 'totalPages',
+                    totalDocs: false,
+                    pagingCounter: false,
+                    meta: false,
+                    hasNextPage: false,
+                    hasPrevPage: false
+                },
+                sort: "-timestamp",
+            });
 
             return sendSuccessResponse(res, followings, "Followings fetched");
         } catch (err) {

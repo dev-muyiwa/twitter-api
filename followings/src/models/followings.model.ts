@@ -1,8 +1,10 @@
 import mongoose, {Document, Model, Schema, Types} from "mongoose";
+import paginate from 'mongoose-paginate-v2';
 
 type FollowingDocument = Document & {
     user: Types.ObjectId;
     following: Types.ObjectId;
+    timestamp?: string
 }
 
 const FollowingSchema: Schema<FollowingDocument> = new Schema<FollowingDocument>({
@@ -14,11 +16,16 @@ const FollowingSchema: Schema<FollowingDocument> = new Schema<FollowingDocument>
     following: {
         type: Schema.Types.ObjectId,
         required: true
+    },
+    timestamp: {
+        type: Date,
+        default: Date.now()
     }
-}, {timestamps: true});
+});
 
+FollowingSchema.plugin(paginate);
 
-const FollowingModel: Model<FollowingDocument> = mongoose.model("Following", FollowingSchema);
+const FollowingModel = mongoose.model<FollowingDocument, mongoose.PaginateModel<FollowingDocument>>("Following", FollowingSchema);
 
 export {
     FollowingDocument, FollowingModel

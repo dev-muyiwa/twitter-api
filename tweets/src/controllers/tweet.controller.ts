@@ -129,7 +129,7 @@ class TweetController {
                 customLabels: {
                     limit: false,
                     page: 'currentPage',
-                    docs: 'tweets',
+                    docs: 'drafts',
                     nextPage: 'next',
                     prevPage: 'prev',
                     totalPages: 'totalPages',
@@ -298,7 +298,7 @@ class TweetController {
                 customLabels: {
                     limit: false,
                     page: 'currentPage',
-                    docs: 'tweets',
+                    docs: 'bookmarks',
                     nextPage: 'next',
                     prevPage: 'prev',
                     totalPages: 'totalPages',

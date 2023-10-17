@@ -19,7 +19,7 @@ Certainly, if you've set up your project to run with Docker Compose, you can sim
 
 ## Prerequisites
 
-Before you begin, ensure you have `Docker` and `Docker Compose` installed on your system.
+Before you begin, ensure you have `docker` and `docker-compose` installed on your system.
 
 ## Getting Started
 
@@ -48,8 +48,8 @@ This will start all the necessary services and containers, making it easier for 
 This project is organized into microservices, each serving a specific function:
 
 - **Account**: Handles user authentication and other user-related operations.
-- **Tweet**: Manages tweet-related operations.
-- **Following**: Manages user followings and followers.
+- **Tweets**: Manages tweet-related operations.
+- **Followings**: Manages user followings and followers.
 - **Notification**: Manages user notifications, ranging from SMS to Email.
 
 Each microservice is a separate Node.js application with its own Mongo database.

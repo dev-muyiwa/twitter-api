@@ -20,13 +20,6 @@ let redisClient: RedisClientType;
 
     redisClient.on("error", async (err) => {
         console.error(`Error connecting to Redis: ${err}`)
-        if (err instanceof SocketClosedUnexpectedlyError) {
-            console.log("Reconnecting in 15s...");
-            new Promise((resolve) => setTimeout(resolve, 15_000));
-            console.log("Reconnecting...");
-            await redisClient.connect();
-            console.log("Redis connection successful")
-        }
     });
 
     await redisClient.connect();
